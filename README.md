@@ -1,4 +1,4 @@
-# Mental Health Status Classification Project
+# Power Consumption Forecasting Project
 
 ## Background
 ---
@@ -18,14 +18,13 @@ For model prediction, a web API is used (created using StreamLit) for user input
 - [Model Training Setting](#model-training-setting)
 - [Project Findings](#project-findings)
   - [EDA](#1-eda-exploratory-data-analysis)
-  - [Best classification model and pipeline configuration](#2-best-classification-model-and-pipeline-configuration)
+  - [Best time series model](#2-best-time-series-model)
   - [Summary of model evaluation metrics from best classification model](#3-summary-of-model-evaluation-metrics-from-best-classification-model)
   - [Hyperparameter importances from Optuna (Final model)](#4-hyperparameter-importances-from-optuna-final-model)
   - [Hyperparameter tuning optimization history from Optuna](#5-hyperparameter-tuning-optimization-history-from-optuna)
   - [Overall confusion matrix and classification report from final model trained](#6-overall-confusion-matrix-and-classification-report-from-final-model-trained)
   - [Precision Recall Curve from best classification model](#7-precision-recall-curve-from-best-classification-model)
   - [Learning Curve Analysis](#8-learning-curve-analysis)
-  - [Feature Importance based on Shap Values for every class](#9-feature-importance-based-on-shap-values-for-every-class)
 - [CRISP-DM Methodology](#crisp-dm-methodology)
 - [Project Architecture Summary](#project-architecture-summary)
 - [Project Folder Structure](#project-folder-structure)
@@ -34,74 +33,42 @@ For model prediction, a web API is used (created using StreamLit) for user input
 - [Project Instructions (Docker)](#project-instructions-docker)
 - [Project Instructions (Heroku with Docker)](#project-instructions-heroku-with-docker)
 - [Initial Data Cleaning and Feature Engineering](#initial-data-cleaning-and-feature-engineering)
-- [Machine Learning Pipelines Configuration](#machine-learning-pipelines-configuration)
-  - [Handling imbalanced data](#i-handling-imbalanced-data)
-  - [Feature Engineering](#ii-feature-engineering)
-  - [Encoding "interval" features](#iii-encoding-interval-features)
-  - [Encoding "binary" features](#iv-encoding-binary-features)
-  - [Encoding "ordinal" features with different magnitudes "for certain"](#v-encoding-ordinal-features-with-different-magnitudes-for-certain)
-  - [Encoding features with rare categories](#vi-encoding-features-with-rare-categories)
-  - [Encoding "nominal" and "ordinal" features with uncertainty in magnitude difference](#vii-encoding-nominal-and-ordinal-features-with-uncertainty-in-magnitude-difference)
-  - [Encoding "time-related" features](#viii-encoding-time-related-features)  
-  - [Feature Scaling](#x-feature-scaling)
-  - [Feature Selection](#xi-feature-selection)
-  - [Cluster Feature representation](#xii-cluster-feature-representation)
 - [Legality](#legality)
 
 ## Code and Resources Used
 ---
-- **Python Version** : 3.10.0
+- **Python Version** : 3.8.0
 - **Packages** : borutashap, feature-engine, featurewiz, imbalanced-learn, joblib, catboost, lightgbm, matplotlib, pymongo, numpy, optuna, pandas, plotly, scikit-learn, scipy, seaborn, shap, streamlit, tqdm, xgboost, yellowbrick
 - **Dataset source** : From 360DIGITMG (For confidentiality reasons, dataset is not included here)
 - **Database**: MongoDB Atlas
 - **MongoDB documentation**: https://www.mongodb.com/docs/
 - **Optuna documentation** : https://optuna.readthedocs.io/en/stable/
 - **Feature Engine documentation** : https://feature-engine.readthedocs.io/en/latest/
-- **Imbalanced Learn documentation** : https://imbalanced-learn.org/stable/index.html
 - **Scikit Learn documentation** : https://scikit-learn.org/stable/modules/classes.html
-- **Shap documentation**: https://shap.readthedocs.io/en/latest/index.html
-- **XGBoost documentation**: https://xgboost.readthedocs.io/en/stable/
-- **LightGBM documentation**: https://lightgbm.readthedocs.io/en/latest/index.html
-- **CatBoost documentation**: https://catboost.ai/en/docs/
 - **Numpy documentation**: https://numpy.org/doc/stable/
 - **Pandas documentation**: https://pandas.pydata.org/docs/
 - **Plotly documentation**: https://plotly.com/python/
 - **Matplotlib documentation**: https://matplotlib.org/stable/index.html
 - **Seaborn documentation**: https://seaborn.pydata.org/
-- **Yellowbrick documentation**: https://www.scikit-yb.org/en/latest/
-- **Scipy documentation**: https://docs.scipy.org/doc/scipy/
 - **Streamlit documentation**: https://docs.streamlit.io/
-- **Blueprint for encoding categorical variables**: https://miro.medium.com/max/1400/1*gXKCiYdrIESmcbte2AtNeg.jpeg
 
 ## Model Training Setting
 ---
-For this project, nested cross validation with stratification is used for identifying the best model class to use for model deployment. The inner loop of nested cross validation consists of 3 fold cross validation using Optuna (TPE Multivariate Sampler with 40 trials on optimizing average F1 macro score) for hyperparameter tuning on different training and validation sets, while the outer loop of nested cross validation consists of 5 fold cross validation for model evaluation on different test sets.
+For this project, day-forward cross validation is used for identifying the best model class to use for model deployment. Different training sets and validation sets are used with Optuna (TPE Multivariate Sampler with 20 trials) for hyperparameter tuning, while different test sets are used for model evaluation.
 
-The diagram below shows how nested cross validation works:
+The diagram below shows how day-forward cross validation works:
 <img src="https://mlr.mlr-org.com/articles/pdf/img/nested_resampling.png" width="600" height="350">
 
-Given the dataset for this project is small (less than 1000 samples), nested cross validation is the most suitable cross validation method to use for model algorithm selection to provide a more realistic generalization error of machine learning models.
+Given the dataset for this project is moderately large (less than 2500 samples), day-forward cross validation is the most suitable cross validation method to use for model algorithm selection to provide a more realistic generalization error of time series models.
 
-The following list of classification models are tested in this project:
-- Logistic Regression
-- Linear SVC
-- K Neighbors Classifier
-- Gaussian Naive Bayes
-- Decision Tree Classifier
-- Random Forest Classifier
-- Extra Trees Classifier
-- Ada Boost Classifier
-- Gradient Boosting Classifier
-- XGBoost Classifier
-- LightGBM Classifier
-- CatBoost Classifier
+The following list of time series models are tested in this project:
+- SARIMAX (no seasonal component)
+- Exponential Smoothing
+- FBProphet
 
-For model evaluation on multiclass classification, the following metrics are used in this project:
-- Balanced accuracy
-- Precision (macro)
-- Recall (macro)
-- F1 score (macro) - (Main metric for Optuna hyperparameter tuning)
-- Matthew's correlation coefficient
+For model evaluation on time series models, the following metrics are used in this project:
+- AIC (Main metric for Optuna hyperparameter tuning for SARIMAX and Exponential Smoothing)
+- Mean Absolute Percentage Error (Main metric for Optuna hyperparameter tuning for FBProphet)
 
 ## Project Findings
 ---
@@ -125,50 +92,18 @@ From the diagram above, there is a very clear indication of target imbalance bet
 
 From the diagram above, most features with missing values identified have missing proportions approximately less than 1%, except for "Method_of_keepintouch" feature with approximately 3% containing missing values.
 
-##### iv. Categorical Features
-The following sets of plots are created for every feature of the dataset that contains less than 100 unique values:
-1. Count plot (Number of unique values per category)
-2. Count plot (Number of unique values per category by target class)
-3. Bar plot (Number of missing values by target class) - For features with missing values
-
-For features with more than 100 unique values, a CSV file is generated which represents the distribution of categories.
-In addition, it was observed that features like "Breakfast_ytd", 'Method_of_keepintouch' and 'Type_of_play_places' can contain multiple values (seperated by ";" symbol). Those features are split into its individual categories first before generating a CSV file for representing distribution of categories.
-
-The set of figures below shows an example of the following plots mentioned above for Method_of_keepintouch feature:
-
-<p float="left">
-<img src="https://user-images.githubusercontent.com/34255556/196936871-869fbabc-b1a1-49e2-93f4-987097581926.png">
-<img src="https://user-images.githubusercontent.com/34255556/196936977-e1f2e831-a255-4650-8c5d-4b27cfc560ef.png">
-<img src="https://user-images.githubusercontent.com/34255556/196937003-dc7e5cd2-7464-40a7-bc77-2dc4d8bd3ca2.png" width="500">
-</p>
-
 ---
-#### 2. Best classification model and pipeline configuration
+#### 2. Best time series model
 
 The following information below summarizes the configuration of the best model identified in this project:
 
-  - <b>Best model class identified</b>: Linear Support Vector Classifier
+  - <b>Best model class identified</b>: Exponential Smoothing
 
-  - <b>Method of handling imbalanced data</b>: None
+  - <b>Best model hyperparameters</b>: {'seasonal': 'additive}
   
-  - <b>Contrast encoding method for ordinal data</b>: Sum Encoder
+Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of inputs within day-forward cross validation.
 
-  - <b>Method of feature scaling</b>: MinMaxScaler
-
-  - <b>Feature selection method</b>: FeatureWiz
-
-  - <b>Number of features selected</b>: 68
-
-  - <b>List of features selected</b>: ['Number_people_household_2', 'Number_people_household_3', 'Enoughtime_toplay_1', 'Enoughtime_toplay_3', 'Outdoorplay_freq_3',  'Method_of_keepintouch_I live near them so I can see them (at a social distance);By phone (texting, calling or video calling);On social media;On games consoles', 'Method_of_keepintouch_I live near them so I can see them (at a social distance);By phone (texting, calling or video calling)', 'Method_of_keepintouch_By phone (texting, calling or video calling);On social media', 'Method_of_keepintouch_By phone (texting, calling or video calling);On social media;On games consoles', 'Method_of_keepintouch_By phone (texting, calling or video calling)', 'Sugarsnack_in_week_1', 'Sugarsnack_in_week_2', 'Sugarsnack_in_week_3', 'Tired_in_week_0', 'Tired_in_week_1', 'Tired_in_week_2', 'Tired_in_week_3', 'Garden', 'Play_near_water', 'Play_in_grass_area', 'Play_in_house','Hours_slept', 'Contact_by_visit', 'Contact_by_phone', 'Snacks_Brk', 'Yogurt_Brk', 'Healthy_Cereal_Brk', 'Easywalk_topark', 'Read_Info_Sheet', 'School_Health_Records', 'Gender_Girl', 'Life_scale', 'School_scale', 'Play_inall_places_3', 'Doingwell_schoolwork_0', 'Sports_in_week_0', 'Internet_in_week_2', 'Takeawayfood_in_week_1', 'Concentrate_in_week_0', 'Going_school_No, I am at home', 'WIMD_2019_Decile', 'Friends_scale', 'Safety_toplay_scale', 'Type_of_play_places_In my house;In my garden', 'Breakfast_ytd_Sugary cereal e.g. cocopops, frosties, sugar puffs, chocolate cereals', 'Homespace_relax_Sometimes but not all the time', 'Study_Year', 'Lots_of_choices_important_1', 'Lots_of_choices_important_4', 'Lots_of_things_good_at_1', 'Lots_of_things_good_at_2', 'Lots_of_things_good_at_4', 'Softdrink_in_week_0', 'Softdrink_in_week_2', 'Softdrink_in_week_3', 'Sleeptime_ytd_sin', 'Sleeptime_ytd_hour_cos', 'Birth_Date_day_of_year_sin', 'Birth_Date_day_of_year_cos', 'Birth_Date_quarter_sin', 'Birth_Date_quarter_cos', 'Awaketime_today_hour_cos', 'Awaketime_today_hour_sin', 'Timestamp_day_of_week_sin', 'Timestamp_month_cos', 'Timestamp_month_sin']
-  
-  - <b>Clustering as additional feature</b>: Yes
-
-  - <b>Best model hyperparameters</b>: 
-  {'C': 0.13529521130402028, 'class_weight': 'balanced', 'dual': False, 'fit_intercept': True, 'intercept_scaling': 1, 'loss': 'squared_hinge', 'max_iter': 1000, 'multi_class': 'ovr', 'penalty': 'l1', 'random_state': 120, 'tol': 0.0001,'verbose': 0}
-  
-Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of folds within nested cross validation.
-
-For every type of classification model tested in this project, a folder is created for every model class within Intermediate_Train_Results folder with the following artifacts:
+For every type of time series model tested in this project, a folder is created for every model class within Intermediate_Train_Results folder with the following artifacts:
 
 - Confusion Matrix from 5 fold cross validation (.png format)
 - Classification Report from 5 fold cross validation (.png format)
@@ -190,10 +125,6 @@ In addition, the following artifacts are also created for the best model class i
 - Shap plots for feature importance from every class (.png format - 2 in total)
 - Precision recall curve (.png format)
 
-<b>Warning: The following artifacts mentioned above for the best model class identified will not be generated for certain model classes under the following scenarios:
-- Shap plots for KNeighborsClassifier and GaussianNB: For generating shap values for these model classes, Kernel explainer from Shap module can be used but with large computational time.
-- Shap plots for XGBClassifier with dart booster: Tree explainer from Shap module currently doesn't support XGBClassifier with dart booster.</b>
-
 ---
 #### 3. Summary of model evaluation metrics from best classification model
 
@@ -211,18 +142,6 @@ The following information below summarizes the evaluation metrics *(average (sta
   - <b>Precision (Training set - 3 fold)</b>: 0.5574 (0.1139)
   - <b>Precision (Validation set - 3 fold)</b>: 0.3854 (0.0504)
   - <b>Precision (Test set - 5 fold)</b>: 0.3346 (0.0384)
-
-  - <b>Recall (Training set - 3 fold)</b>: 0.4975 (0.0381)
-  - <b>Recall (Validation set - 3 fold)</b>: 0.3367 (0.0267)
-  - <b>Recall (Test set - 5 fold)</b>: 0.3484 (0.0284)
-
-  - <b>F1 score (Training set - 3 fold)</b>: 0.4952 (0.0562)
-  - <b>F1 score (Validation set - 3 fold)</b>: 0.3274 (0.0142)
-  - <b>F1 score (Test set - 5 fold)</b>: 0.3293 (0.0265)
-
-  - <b>Matthews Correlation Coefficient (Training set - 3 fold)</b>: 0.3590 (0.0605)
-  - <b>Matthews Correlation Coefficient (Validation set - 3 fold)</b>: 0.1631 (0.0316)
-  - <b>Matthews Correlation Coefficient (Test set - 5 fold)</b>: 0.1750 (0.0487)
 
 Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of folds within nested cross validation
 
@@ -266,36 +185,6 @@ From the diagram above, the gap between train and test F1 macro scores (from 5-f
 However, the gap between both scores remain large, which indicates that adding more training data may help to improve generalization of model.
 
 ---
-#### 9. Feature Importance based on Shap Values for every class
-
-<b> Emotional and behaviour significant class</b>
-<p float="left">
-<img src="https://user-images.githubusercontent.com/34255556/196928977-169bdf6d-27b8-4553-82b0-3cd22c727088.png" width="800">
-<img src="https://user-images.githubusercontent.com/34255556/196929024-2083fdcb-1990-4acc-b832-6ecb7e3f5820.png" width="800">
-</p>
-
-From both diagrams above, gender of child is the most influential variable from the top 68 variables identified from feature selection using FeatureWiz for predicting whether a child's wellbeing is both emotional and behaviour significant. Shap's summary plot provides indication of how values of different features may impact the result of model prediction. For example, gender of child not being identified as female have higher probability of being emotional and behaviour significant, while a child who is very unhappy with school or life (lower value of scale close to 0) has higher probabiliy of being identified as emotional and behaviour significant.
-
-The following plots below represents feature importance based on shap values for other classes for reference:
-
-<b> Emotional significant class</b>
-<p float="left">
-<img src="https://user-images.githubusercontent.com/34255556/196930962-850b0c9a-b95e-4bc5-a2a8-394c89e1cc85.png" width="800">
-<img src="https://user-images.githubusercontent.com/34255556/196931136-4d8b1fe5-16de-4d69-9f70-9bd34ed19a73.png" width="800">
-</p>
-
-<b> Behaviour significant class</b>
-<p float="left">
-<img src="https://user-images.githubusercontent.com/34255556/196930911-5de4d998-39f5-4fcf-ae82-80291b84927d.png" width="800">
-<img src="https://user-images.githubusercontent.com/34255556/196931084-f93f8c56-796e-47e1-b532-34080bae5ceb.png" width="800">
-</p>
-
-<b> Normal class</b>
-<p float="left">
-<img src="https://user-images.githubusercontent.com/34255556/196931003-40fbf74d-df59-4879-bfdb-5e01b65580bf.png" width="800">
-<img src="https://user-images.githubusercontent.com/34255556/196931177-effe0b51-0207-4f09-8621-da4fc694204b.png" width="800">
-</p>
-
 
 ## CRISP-DM Methodology
 ---
@@ -329,9 +218,7 @@ The following points below summarizes the use of every file/folder available for
 10. requirements.txt: List of Python packages to install for project deployment
 11. setup.py : Script for installing relevant python packages for project deployment
 12. Docker_env: Folder that contains files that are required for model deployment without logging files or results.
-13. BorutaShap.py: Modified python script with some changes to coding for performing feature selection based on shap values on test set
-14. _tree.py: Modified python script to include AdaBoost Classifier as part of the set of models that support Shap library.
-15. pipeline_api.py: Main python file for running training pipeline process and performing model prediction.
+13. pipeline_api.py: Main python file for running training pipeline process and performing model prediction.
 
 ## MongoDB Atlas Setup
 ---
@@ -570,137 +457,6 @@ For more details of which features have been initially removed from the dataset,
 
 In addition, the following pickle files (with self-explanatory names) have been created inside Intermediate_Train_Results folder during this stage which may be used later on during data preprocessing on test data:
 - <b>CategoryImputer.pkl</b>
-
-## Machine Learning Pipelines Configuration
----
-While data preprocessing steps can be done on the entire dataset before model training, it is highly recommended to perform all data preprocessing steps within cross validation using pipelines to reduce the risk of data leakage, where information from training data is leaked to validation/test data.
-
-The sections below summarizes the details of Machine Learning pipelines with various variations in steps:
-
-#### i. Handling imbalanced data
-While most machine learning models have hyperparameters that allow adjustment of <b>class weights</b> for classification, an alternative solution to handle imbalanced data is to use oversampling method.
-
-For this project, the following methods of handling imbalanced data are tested:
-
-- SMOTEN: Synthetic Minority Over-sampling Technique for Nominal data.
-- No oversampling or undersampling required
-
-Note that this dataset do not contain continuous variables, thus the only suitable methods available for handling imbalanced data is either using SMOTEN for oversampling or using class weights hyperparameter.
-
-#### ii. Feature Engineering
-The following features are derived after handling imbalanced data if relevant:
-- Age (Difference between Timestamp and Birth_Date)
-- Hours slept (Difference between Awaketime_today and Sleeptime_ytd)
-- Datetime features (i.e. year, month, quarter, week, day_of_week, day_of_month, day_of_year, hour and minute) from Timestamp, Birth_Date, Awaketime_today and Sleeptime_ytd (using DatetimeFeatures function from feature-engine library)
-- Number of methods of keep in touch (based on Method_of_keepintouch feature)
-- Number of types of play places (based on Type_of_play_places feature)
-- Number of breakfast food yesterday (based on Breakfast_ytd feature)
-
-#### iii. Encoding "interval" features
-Features that are identifed as interval data types have equal magnitudes between different values. These features can be encoded directly using custom <b>label encoding (from 0)</b>:
-- Study_Year
-- Safety_toplay_scale
-- Health_scale
-- School_scale
-- Family_scale
-- Friends_scale
-- Looks_scale
-- Life_scale
-- WIMD_2019_Rank
-- WIMD_2019_Decile
-- WIMD_2019_Quintile
-- WIMD_2019_Quartile
-
-#### iv. Encoding "binary" features
-Features that are identified as binary data types only require simple encoding (1 vs 0):
-- Read_Info_Sheet
-- School_Health_Records
-- Other_children_inhouse
-- Easywalk_topark
-- Easywalk_somewhere
-- Garden
-- Keep_in_touch_family_outside_household
-- Keep_in_touch_friends
-- Sleeptime_ytd_minute
-- Awaketime_today_minute
-
-In addition, these following features contain multiple values which can also be split into individual values in binary form:
-- Method_of_keepintouch (Contact_by_phone, Contact_by_visit, Contact_by_social_media, Contact_by_game)
-- Type_of_play_places (Play_in_house, Play_in_garden, Play_in_grass_area, Play_in_bushes, Play_in_woods, Play_in_field, Play_in_street, Play_in_playground, Play_in_bike_or_park, Play_near_water) * Only top 10 categories are used
-- Breakfast_ytd (Bread_Brk, Sugary_Cereal_Brk, Healthy_Cereal_Brk, Fruits_Brk, Yogurt_Brk, Nothing_Brk, Cooked_Breakfast_Brk, Snacks_Brk) * Only top 8 categories are used
-
-#### v. Encoding "ordinal" features with different magnitudes "for certain"
-For features that are identified as ordinal data types with high certainty of categories having different magnitudes can be encoded using one of the following contrast methods:
-- Backward Difference Encoder
-- Polynomial Encoder
-- Sum Encoder
-- Helmert Encoder
-
-These following features will be encoded using contrast methods, since these features clearly show different magnitudes:
-- Fruitveg_ytd
-- Number_people_household
-- Sports_in_week 
-- Internet_in_week
-- Tired_in_week
-- Concentrate_in_week
-- Softdrink_in_week
-- Sugarsnack_in_week
-- Takeawayfood_in_week
-
-#### vi. Encoding features with rare categories
-For features that contain many unique categories, these features may have categories that are considered to be "rare" due to low frequency. To reduce the cardinality of these features, <b>RareLabelEncoder</b> from feature-engine library is used.
-
-#### vii. Encoding "nominal" and "ordinal" features with uncertainty in magnitude difference
-The following list of features are ordinal that may or may not have different magnitudes between values:
-- Doingwell_schoolwork
-- Lots_of_choices_important
-- Lots_of_things_good_at
-- Feel_partof_community
-- Outdoorplay_freq
-- Enoughtime_toplay
-- Play_inall_places
-
-<b>Note that the features listed above are encoded using label encoding (from 0 in order of importance) as intermediate step before further data encoding.</b>
-
-The following list of features are identified as nominal:
-- Gender
-- Going_school
-- Homespace_relax
-- Method_of_keepintouch
-- Breakfast_ytd
-- Type_of_play_places
-
-<b>For all the features mentioned in this section, features are encoded using either One Hot encoding (for non-tree based models) or CatBoost encoding (for tree-based models).</b>
-
-#### viii. Encoding "time-related" features
-All time-related features that are derived from Timestamp, Birth_Date, Sleeptime_ytd and Awaketime_today are encoded using either CyclicalFeatures (for non-tree based models) function from feature-engine library or CatBoost encoding (for tree-based models).
-
-Note that while One Hot encoding is the most popular approach for categorical data encoding, time-related features are usually cyclical in nature such that performing one hot encoding on time related features does not capture the cyclical component.
-
-#### x. Feature Scaling
-Feature scaling is only essential in some machine learning models like Logistic Regression, Linear SVC and KNN for faster convergence and to prevent misinterpretation of one feature significantly more important than other features. For this project, MinMax scaler is used since this dataset only contains categorical variables.
-
-#### xi. Feature Selection
-Given the current dataset has very large number of features, performing feature selection is essential for simplifying the machine learning model, reducing model training time and to reduce risk of model overfitting.
-
-For this project, the following methods of feature selection are tested:
-- Mutual Information
-- ANOVA
-- Feature Importance using Extra Trees Classifier
-- Logistic Regression with Lasso Penalty (l1)
-- BorutaShap (Default base learner: Random Forest Classifier)
-- FeatureWiz (SULOV (Searching for Uncorrelated List of Variables) + Recursive Feature Elimination with XGBoost Classifier)
-
-#### xii. Cluster Feature representation
-After selecting the best features from feature selection, an additional step that can be tested involves representing distance between various points and identified cluster point as a feature (cluster_distance) for model training. From the following research paper (https://link.springer.com/content/pdf/10.1007/s10115-021-01572-6.pdf) written by Maciej Piernik and Tadeusz Morzy in 2021, both authors concluded the following points that will be applied to this project:
-
--  Adding cluster-generated features may improve quality of classification models (linear classifiers like Logistic Regression and Linear SVC), with extra caution required for non-linear classifiers like K Neighbors Classifier and random forest approaches.
-
-- Encoding clusters as features based on distances between points and cluster representatives with feature scaling is significantly better than solely relying on cluster membership with One Hot encoding. 
-
-- Adding generated cluster features to existing ones is safer option than replacing them altogether, which may yield model improvements without degrading model quality
-
-- No single clustering approach (K-means vs Hierarchical vs DBScan vs Affinity Propagation) provide significantly better results in model performance. Thus, affinity propagation method is used for this project, which automatically determines the number of clusters to use. However, "damping" parameter requires hyperparameter tuning for using Affinity Propagation method.
 
 ## Legality
 ---
