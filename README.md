@@ -5,11 +5,11 @@
 
 <img src="https://user-images.githubusercontent.com/34255556/198823730-39af6d71-f24f-432e-8d77-be1e6676875f.png" width="600">
 
-Ever since the start of the pandemic back in 2020, the government expects more lockdowns through the winter to slow down the spread of the virus. One of the concerns raised by the government is the wellbeing of young primary school children since they are removed from their friends and play environments.
+In the current digital age, beverage manufacturing companies have an increase in demand for using more clean energy, which leads to a rise in demand for using IIOT (Industrial Internet of Things) for better efficiency of energy management and reducing operational costs. Sensors installed on various machines within a beverage manufacturing life cycle provide real-time data, which is critical for monitoring the power consumption of individual types of equipment and overall power consumption for future predictive maintenance instantaneously.
 
-For this project, the main goal is to deploy initial classification models that help to monitor a child’s wellbeing status during the pandemic period. By identifying factors that influence the status of a child’s wellbeing through a customized survey, the government will be able to make more informed decisions/new policies that reduce the risk of a child having behavioral or emotional difficulties or both.
+For this project, the main goal is to deploy initial time series models that help to monitor and forecast future power consumption levels of a beverage manufacturing factory. As real-time data flows in continuously from IoT sensors at specific small intervals, these time series models will need to be trained on a regular basis to capture fluctuations of overall power consumption for better monitoring and reducing energy waste of equipment. While power consumption data grows in size over time, it is more feasible to monitor the overall power consumption of a factory on a more coarse-grained level (i.e. on a 15-minute interval basis) from very granular data.
 
-Dataset is provided in .json format by client under Training_Batch_Files folder for model training. (not included in this repository due to data confidentiality reasons)
+Dataset is provided in .csv format by client under Training_Batch_Files folder for model training. (not included in this repository due to data confidentiality reasons)
 
 For model prediction, a web API is used (created using StreamLit) for user input. Note that results generated from model prediction along with user inputs can be stored in various formats (i.e. in CSV file format or another database).
 
@@ -69,6 +69,9 @@ For model evaluation on time series models, the following metrics are used in th
 - AIC (Main metric for Optuna hyperparameter tuning for SARIMAX and Exponential Smoothing)
 - Mean Absolute Percentage Error (Main metric for Optuna hyperparameter tuning for FBProphet)
 
+Note that AIC score is only used for hyperparameter tuning and not for direct comparison with other model classes, because calculation of AIC scores for different model classes (i.e. SARIMAX and Exponential Smoothing) require different initial conditions for computing likelihoods. Thus, MAPE is used instead for model selection.
+More details about the use of AIC score can be referred here for reference: https://robjhyndman.com/hyndsight/aic/
+
 ## Project Findings
 ---
 
@@ -98,9 +101,9 @@ The following information below summarizes the configuration of the best model i
 
   - <b>Best model class identified</b>: Exponential Smoothing
 
-  - <b>Best model hyperparameters</b>: {'seasonal': 'additive}
+  - <b>Best model hyperparameters</b>: {'seasonal': 'additive', 'trend': None}
   
-Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of inputs/number of jumps within day-forward cross validation.
+Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of inputs/number of jumps within day-forward cross validation (currently 8 folds in total).
 
 For every type of time series model tested in this project, a folder is created for every model class within Intermediate_Train_Results folder with the following artifacts:
 
@@ -132,7 +135,7 @@ The following information below summarizes the evaluation metric *(average (stan
   - <b>MAPE score (Validation set)</b>: 0.11034% (1.29E-05)
   - <b>MAPE score (Test set)</b>: 0.1065588% (2.31E-05)
 
-Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of inputs/number of jumps within day-forward cross validation
+Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of inputs/number of jumps within day-forward cross validation (currently 8 folds in total).
 
 ---
 #### 4. Residual diagnostics from final model trained
@@ -159,7 +162,6 @@ From the diagram above, exponential smoothing model shows a reasonable good fit 
 
 From the diagram above, the gap between train and test MAPE scores gradually decreases as number of training sample size increases. Given the gap between both scores is considerably small, this indicates that adding more training data may not help to further improve model generalization.
 
----
 ## CRISP-DM Methodology
 ---
 For any given Machine Learning projects, CRISP-DM (Cross Industry Standard Practice for Data Mining) methodology is the most commonly adapted methodology used.
@@ -234,6 +236,7 @@ The following sections below explains the three main approaches that can be used
 
 ## Project Instructions (Docker)
 ---
+
 <img src="https://user-images.githubusercontent.com/34255556/195037066-21347c07-217e-4ecd-9fef-4e7f8cf3e098.png" width="600">
 
 Deploying this project on Docker allows for portability between different environments and running instances without relying on host operating system.
@@ -249,7 +252,7 @@ Docker Desktop needs to be installed into your local system (https://www.docker.
 
 1. Download and extract the zip file from this github repository into your local machine system.
 
-<img src="https://user-images.githubusercontent.com/34255556/197315695-5f19b123-22a3-4751-82cd-d6bbca13a3d9.png" width="600" height="200">
+<img src="https://user-images.githubusercontent.com/34255556/198825206-7e8e4483-2710-4862-b980-5bce29697b58.png" width="600" height="200">
 
 2. Copy Docker_env folder into a separate directory, before proceeding with subsequent steps which will use Docker_env folder as root directory.
   
@@ -309,7 +312,7 @@ A suitable alternative for deploying this project is to use docker images with c
 For replicating the steps required for running this project on your own Heroku account, the following steps are required:
 1. Clone this github repository into your local machine system or your own Github account if available.
 
-<img src="https://user-images.githubusercontent.com/34255556/197315695-5f19b123-22a3-4751-82cd-d6bbca13a3d9.png" width="600" height="200">
+<img src="https://user-images.githubusercontent.com/34255556/198825206-7e8e4483-2710-4862-b980-5bce29697b58.png" width="600" height="200">
 
 2. Copy Docker_env folder into a separate directory, before proceeding with subsequent steps which will use Docker_env folder as root directory.
 
@@ -364,7 +367,7 @@ heroku container:release web -a app-name
 If you prefer to deploy this project on your local machine system, the steps for deploying this project has been simplified down to the following:
 
 1. Download and extract the zip file from this github repository into your local machine system.
-<img src="https://user-images.githubusercontent.com/34255556/197315695-5f19b123-22a3-4751-82cd-d6bbca13a3d9.png" width="600" height="200">
+<img src="https://user-images.githubusercontent.com/34255556/198825206-7e8e4483-2710-4862-b980-5bce29697b58.png" width="600" height="200">
 
 2. Copy Docker_env folder into a separate directory, before proceeding with subsequent steps which will use Docker_env folder as root directory.
   
