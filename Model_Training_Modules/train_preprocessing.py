@@ -143,7 +143,7 @@ class train_Preprocessor:
         plt.figure(figsize=(72,18))
         plt.plot(data, label='Original')
         plt.title(
-            '15 Minute Average of Energy Consumption Levels for September', fontsize=34)
+            '15 Minute Average of Power Consumption Levels for September', fontsize=34)
         plt.legend(loc='best', fontsize=28)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
@@ -155,7 +155,7 @@ class train_Preprocessor:
         plt.figure(figsize=(30,18))
         plt.plot(data.iloc[:96], label='Original')
         plt.title(
-            '15 Minute Average of Energy Consumption Levels for One Day', fontsize=34)
+            '15 Minute Average of Power Consumption Levels for One Day', fontsize=34)
         plt.legend(loc='best', fontsize=28)
         plt.xticks(fontsize=24)
         plt.yticks(fontsize=24)
