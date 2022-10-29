@@ -1,0 +1,16 @@
+Cython==0.29.32
+joblib==1.1.0
+kaleido==0.2.1
+matplotlib==3.5.3
+numpy==1.23.3
+optuna==3.0.2
+pandas==1.4.4
+plotly==5.10.0
+pymongo[srv]==4.2.0
+scikit-learn==1.1.2
+scipy==1.8.1
+seaborn==0.11.2
+statsmodels==0.13.2
+streamlit==1.14.0
+timeseries-cv==0.1.5
+-e .

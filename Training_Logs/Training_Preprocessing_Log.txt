@@ -1,0 +1,11 @@
+2022-10-29/12:47:12		Start performing exploratory data analysis
+2022-10-29/12:47:12		Start reading compiled data from database
+2022-10-29/12:47:14		Finish reading compiled data from database
+2022-10-29/12:47:20		Finish performing exploratory data analysis
+2022-10-29/12:47:37		Start of data preprocessing
+2022-10-29/12:47:37		Start reading compiled data from database
+2022-10-29/12:47:38		Finish reading compiled data from database
+2022-10-29/12:47:38		Start handling duplicated rows in the dataset
+2022-10-29/12:47:38		No duplicated rows found in the dataset
+2022-10-29/12:47:38		Finish handling duplicated rows in the dataset
+2022-10-29/12:47:38		End of data preprocessing

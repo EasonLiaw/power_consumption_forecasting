@@ -1,0 +1,133 @@
+2022-10-29/12:48:05		Start process of model selection
+2022-10-29/12:48:05		Start hyperparameter tuning for Prophet for fold 1
+2022-10-29/12:48:26		Hyperparameter tuning for Prophet completed for fold 1
+2022-10-29/12:48:26		Finish hyperparameter tuning for Prophet for fold 1
+2022-10-29/12:48:27		Evaluating model performance for Prophet on validation set completed for fold 1
+2022-10-29/12:48:27		Optimized results for Prophet model saved for fold 1
+2022-10-29/12:48:37		Start hyperparameter tuning for Prophet for fold 2
+2022-10-29/12:48:57		Hyperparameter tuning for Prophet completed for fold 2
+2022-10-29/12:48:57		Finish hyperparameter tuning for Prophet for fold 2
+2022-10-29/12:48:57		Evaluating model performance for Prophet on validation set completed for fold 2
+2022-10-29/12:48:57		Optimized results for Prophet model saved for fold 2
+2022-10-29/12:49:07		Start hyperparameter tuning for Prophet for fold 3
+2022-10-29/12:49:26		Hyperparameter tuning for Prophet completed for fold 3
+2022-10-29/12:49:26		Finish hyperparameter tuning for Prophet for fold 3
+2022-10-29/12:49:27		Evaluating model performance for Prophet on validation set completed for fold 3
+2022-10-29/12:49:27		Optimized results for Prophet model saved for fold 3
+2022-10-29/12:49:37		Start hyperparameter tuning for Prophet for fold 4
+2022-10-29/12:49:56		Hyperparameter tuning for Prophet completed for fold 4
+2022-10-29/12:49:56		Finish hyperparameter tuning for Prophet for fold 4
+2022-10-29/12:49:57		Evaluating model performance for Prophet on validation set completed for fold 4
+2022-10-29/12:49:57		Optimized results for Prophet model saved for fold 4
+2022-10-29/12:50:07		Start hyperparameter tuning for Prophet for fold 5
+2022-10-29/12:50:26		Hyperparameter tuning for Prophet completed for fold 5
+2022-10-29/12:50:26		Finish hyperparameter tuning for Prophet for fold 5
+2022-10-29/12:50:27		Evaluating model performance for Prophet on validation set completed for fold 5
+2022-10-29/12:50:27		Optimized results for Prophet model saved for fold 5
+2022-10-29/12:50:37		Start hyperparameter tuning for Prophet for fold 6
+2022-10-29/12:50:57		Hyperparameter tuning for Prophet completed for fold 6
+2022-10-29/12:50:57		Finish hyperparameter tuning for Prophet for fold 6
+2022-10-29/12:50:58		Evaluating model performance for Prophet on validation set completed for fold 6
+2022-10-29/12:50:58		Optimized results for Prophet model saved for fold 6
+2022-10-29/12:51:08		Start hyperparameter tuning for Prophet for fold 7
+2022-10-29/12:51:28		Hyperparameter tuning for Prophet completed for fold 7
+2022-10-29/12:51:28		Finish hyperparameter tuning for Prophet for fold 7
+2022-10-29/12:51:29		Evaluating model performance for Prophet on validation set completed for fold 7
+2022-10-29/12:51:29		Optimized results for Prophet model saved for fold 7
+2022-10-29/12:51:39		Start hyperparameter tuning for Prophet for fold 8
+2022-10-29/12:52:00		Hyperparameter tuning for Prophet completed for fold 8
+2022-10-29/12:52:00		Finish hyperparameter tuning for Prophet for fold 8
+2022-10-29/12:52:01		Evaluating model performance for Prophet on validation set completed for fold 8
+2022-10-29/12:52:01		Optimized results for Prophet model saved for fold 8
+2022-10-29/12:52:12		Average optimized results for Prophet model saved
+2022-10-29/12:52:22		Start hyperparameter tuning for ExponentialSmoothing for fold 1
+2022-10-29/12:52:28		Hyperparameter tuning for ExponentialSmoothing completed for fold 1
+2022-10-29/12:52:28		Finish hyperparameter tuning for ExponentialSmoothing for fold 1
+2022-10-29/12:52:28		Evaluating model performance for ExponentialSmoothing on validation set completed for fold 1
+2022-10-29/12:52:28		Optimized results for ExponentialSmoothing model saved for fold 1
+2022-10-29/12:52:38		Start hyperparameter tuning for ExponentialSmoothing for fold 2
+2022-10-29/12:52:43		Hyperparameter tuning for ExponentialSmoothing completed for fold 2
+2022-10-29/12:52:43		Finish hyperparameter tuning for ExponentialSmoothing for fold 2
+2022-10-29/12:52:43		Evaluating model performance for ExponentialSmoothing on validation set completed for fold 2
+2022-10-29/12:52:43		Optimized results for ExponentialSmoothing model saved for fold 2
+2022-10-29/12:52:53		Start hyperparameter tuning for ExponentialSmoothing for fold 3
+2022-10-29/12:52:58		Hyperparameter tuning for ExponentialSmoothing completed for fold 3
+2022-10-29/12:52:58		Finish hyperparameter tuning for ExponentialSmoothing for fold 3
+2022-10-29/12:52:58		Evaluating model performance for ExponentialSmoothing on validation set completed for fold 3
+2022-10-29/12:52:58		Optimized results for ExponentialSmoothing model saved for fold 3
+2022-10-29/12:53:08		Start hyperparameter tuning for ExponentialSmoothing for fold 4
+2022-10-29/12:53:13		Hyperparameter tuning for ExponentialSmoothing completed for fold 4
+2022-10-29/12:53:13		Finish hyperparameter tuning for ExponentialSmoothing for fold 4
+2022-10-29/12:53:13		Evaluating model performance for ExponentialSmoothing on validation set completed for fold 4
+2022-10-29/12:53:13		Optimized results for ExponentialSmoothing model saved for fold 4
+2022-10-29/12:53:23		Start hyperparameter tuning for ExponentialSmoothing for fold 5
+2022-10-29/12:53:29		Hyperparameter tuning for ExponentialSmoothing completed for fold 5
+2022-10-29/12:53:29		Finish hyperparameter tuning for ExponentialSmoothing for fold 5
+2022-10-29/12:53:29		Evaluating model performance for ExponentialSmoothing on validation set completed for fold 5
+2022-10-29/12:53:29		Optimized results for ExponentialSmoothing model saved for fold 5
+2022-10-29/12:53:39		Start hyperparameter tuning for ExponentialSmoothing for fold 6
+2022-10-29/12:53:44		Hyperparameter tuning for ExponentialSmoothing completed for fold 6
+2022-10-29/12:53:44		Finish hyperparameter tuning for ExponentialSmoothing for fold 6
+2022-10-29/12:53:44		Evaluating model performance for ExponentialSmoothing on validation set completed for fold 6
+2022-10-29/12:53:44		Optimized results for ExponentialSmoothing model saved for fold 6
+2022-10-29/12:53:54		Start hyperparameter tuning for ExponentialSmoothing for fold 7
+2022-10-29/12:53:59		Hyperparameter tuning for ExponentialSmoothing completed for fold 7
+2022-10-29/12:53:59		Finish hyperparameter tuning for ExponentialSmoothing for fold 7
+2022-10-29/12:53:59		Evaluating model performance for ExponentialSmoothing on validation set completed for fold 7
+2022-10-29/12:53:59		Optimized results for ExponentialSmoothing model saved for fold 7
+2022-10-29/12:54:09		Start hyperparameter tuning for ExponentialSmoothing for fold 8
+2022-10-29/12:54:14		Hyperparameter tuning for ExponentialSmoothing completed for fold 8
+2022-10-29/12:54:14		Finish hyperparameter tuning for ExponentialSmoothing for fold 8
+2022-10-29/12:54:14		Evaluating model performance for ExponentialSmoothing on validation set completed for fold 8
+2022-10-29/12:54:14		Optimized results for ExponentialSmoothing model saved for fold 8
+2022-10-29/12:54:25		Average optimized results for ExponentialSmoothing model saved
+2022-10-29/12:54:35		Start hyperparameter tuning for SARIMAX for fold 1
+2022-10-29/12:57:23		Hyperparameter tuning for SARIMAX completed for fold 1
+2022-10-29/12:57:23		Finish hyperparameter tuning for SARIMAX for fold 1
+2022-10-29/12:57:39		Evaluating model performance for SARIMAX on validation set completed for fold 1
+2022-10-29/12:57:39		Optimized results for SARIMAX model saved for fold 1
+2022-10-29/12:57:49		Start hyperparameter tuning for SARIMAX for fold 2
+2022-10-29/13:01:46		Hyperparameter tuning for SARIMAX completed for fold 2
+2022-10-29/13:01:46		Finish hyperparameter tuning for SARIMAX for fold 2
+2022-10-29/13:02:08		Evaluating model performance for SARIMAX on validation set completed for fold 2
+2022-10-29/13:02:08		Optimized results for SARIMAX model saved for fold 2
+2022-10-29/13:02:18		Start hyperparameter tuning for SARIMAX for fold 3
+2022-10-29/13:06:18		Hyperparameter tuning for SARIMAX completed for fold 3
+2022-10-29/13:06:18		Finish hyperparameter tuning for SARIMAX for fold 3
+2022-10-29/13:06:38		Evaluating model performance for SARIMAX on validation set completed for fold 3
+2022-10-29/13:06:38		Optimized results for SARIMAX model saved for fold 3
+2022-10-29/13:06:48		Start hyperparameter tuning for SARIMAX for fold 4
+2022-10-29/13:11:31		Hyperparameter tuning for SARIMAX completed for fold 4
+2022-10-29/13:11:31		Finish hyperparameter tuning for SARIMAX for fold 4
+2022-10-29/13:11:56		Evaluating model performance for SARIMAX on validation set completed for fold 4
+2022-10-29/13:11:56		Optimized results for SARIMAX model saved for fold 4
+2022-10-29/13:12:06		Start hyperparameter tuning for SARIMAX for fold 5
+2022-10-29/13:17:45		Hyperparameter tuning for SARIMAX completed for fold 5
+2022-10-29/13:17:45		Finish hyperparameter tuning for SARIMAX for fold 5
+2022-10-29/13:18:25		Evaluating model performance for SARIMAX on validation set completed for fold 5
+2022-10-29/13:18:25		Optimized results for SARIMAX model saved for fold 5
+2022-10-29/13:18:35		Start hyperparameter tuning for SARIMAX for fold 6
+2022-10-29/13:24:06		Hyperparameter tuning for SARIMAX completed for fold 6
+2022-10-29/13:24:06		Finish hyperparameter tuning for SARIMAX for fold 6
+2022-10-29/13:24:40		Evaluating model performance for SARIMAX on validation set completed for fold 6
+2022-10-29/13:24:40		Optimized results for SARIMAX model saved for fold 6
+2022-10-29/13:24:50		Start hyperparameter tuning for SARIMAX for fold 7
+2022-10-29/13:30:29		Hyperparameter tuning for SARIMAX completed for fold 7
+2022-10-29/13:30:29		Finish hyperparameter tuning for SARIMAX for fold 7
+2022-10-29/13:31:09		Evaluating model performance for SARIMAX on validation set completed for fold 7
+2022-10-29/13:31:09		Optimized results for SARIMAX model saved for fold 7
+2022-10-29/13:31:19		Start hyperparameter tuning for SARIMAX for fold 8
+2022-10-29/13:37:56		Hyperparameter tuning for SARIMAX completed for fold 8
+2022-10-29/13:37:56		Finish hyperparameter tuning for SARIMAX for fold 8
+2022-10-29/13:38:32		Evaluating model performance for SARIMAX on validation set completed for fold 8
+2022-10-29/13:38:32		Optimized results for SARIMAX model saved for fold 8
+2022-10-29/13:38:43		Average optimized results for SARIMAX model saved
+2022-10-29/13:38:53		Best model identified based on MAPE is ExponentialSmoothing with the following test score: 0.0011 (0.0)
+2022-10-29/13:38:53		Finish process of model selection
+2022-10-29/13:40:24		Start performing hyperparameter tuning on best model identified overall: ExponentialSmoothing
+2022-10-29/13:40:24		Start final model training on all data for ExponentialSmoothing
+2022-10-29/13:40:24		Start hyperparameter tuning for ExponentialSmoothing for fold overall
+2022-10-29/13:40:30		Hyperparameter tuning for ExponentialSmoothing completed for fold overall
+2022-10-29/13:40:30		Finish hyperparameter tuning for ExponentialSmoothing for fold overall
+2022-10-29/13:40:34		Finish final model training on all data for ExponentialSmoothing
+2022-10-29/13:40:34		Finish performing hyperparameter tuning on best model identified overall: ExponentialSmoothing
