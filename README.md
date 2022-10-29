@@ -3,7 +3,7 @@
 ## Background
 ---
 
-<img src="https://user-images.githubusercontent.com/34255556/196916971-21406264-79e5-4f70-a418-08c94e4c1b91.png" width="600">
+<img src="https://user-images.githubusercontent.com/34255556/198823730-39af6d71-f24f-432e-8d77-be1e6676875f.png" width="600">
 
 Ever since the start of the pandemic back in 2020, the government expects more lockdowns through the winter to slow down the spread of the virus. One of the concerns raised by the government is the wellbeing of young primary school children since they are removed from their friends and play environments.
 
@@ -19,12 +19,10 @@ For model prediction, a web API is used (created using StreamLit) for user input
 - [Project Findings](#project-findings)
   - [EDA](#1-eda-exploratory-data-analysis)
   - [Best time series model](#2-best-time-series-model)
-  - [Summary of model evaluation metrics from best classification model](#3-summary-of-model-evaluation-metrics-from-best-classification-model)
-  - [Hyperparameter importances from Optuna (Final model)](#4-hyperparameter-importances-from-optuna-final-model)
-  - [Hyperparameter tuning optimization history from Optuna](#5-hyperparameter-tuning-optimization-history-from-optuna)
-  - [Overall confusion matrix and classification report from final model trained](#6-overall-confusion-matrix-and-classification-report-from-final-model-trained)
-  - [Precision Recall Curve from best classification model](#7-precision-recall-curve-from-best-classification-model)
-  - [Learning Curve Analysis](#8-learning-curve-analysis)
+  - [Summary of model evaluation metrics from best time series model](#3-summary-of-model-evaluation-metrics-from-best-time-series-model)
+  - [Residual diagnostics from final model trained](#4-residual-diagnostics-from-final-model-trained)
+  - [Time series plot (Actual vs Predicted) from best time series model](#5-time-series-plot-actual-vs-predicted-from-best-time-series-model)
+  - [Learning Curve Analysis](#6-learning-curve-analysis)
 - [CRISP-DM Methodology](#crisp-dm-methodology)
 - [Project Architecture Summary](#project-architecture-summary)
 - [Project Folder Structure](#project-folder-structure)
@@ -37,13 +35,13 @@ For model prediction, a web API is used (created using StreamLit) for user input
 
 ## Code and Resources Used
 ---
-- **Python Version** : 3.8.0
-- **Packages** : borutashap, feature-engine, featurewiz, imbalanced-learn, joblib, catboost, lightgbm, matplotlib, pymongo, numpy, optuna, pandas, plotly, scikit-learn, scipy, seaborn, shap, streamlit, tqdm, xgboost, yellowbrick
+- **Python Version** : 3.8.0 (Note that FBProphet library currently doesn't work for Python versions >=3.9.0)
+- **Packages** : fbprophet, joblib, matplotlib, pymongo, numpy, optuna, pandas, plotly, scikit-learn, statsmodels, seaborn, streamlit, timeseries-cv
 - **Dataset source** : From 360DIGITMG (For confidentiality reasons, dataset is not included here)
 - **Database**: MongoDB Atlas
+- **FBProphet documentation**: https://facebook.github.io/prophet/docs/quick_start.html
 - **MongoDB documentation**: https://www.mongodb.com/docs/
 - **Optuna documentation** : https://optuna.readthedocs.io/en/stable/
-- **Feature Engine documentation** : https://feature-engine.readthedocs.io/en/latest/
 - **Scikit Learn documentation** : https://scikit-learn.org/stable/modules/classes.html
 - **Numpy documentation**: https://numpy.org/doc/stable/
 - **Pandas documentation**: https://pandas.pydata.org/docs/
@@ -51,15 +49,16 @@ For model prediction, a web API is used (created using StreamLit) for user input
 - **Matplotlib documentation**: https://matplotlib.org/stable/index.html
 - **Seaborn documentation**: https://seaborn.pydata.org/
 - **Streamlit documentation**: https://docs.streamlit.io/
+- **Statsmodels documentation**: https://www.statsmodels.org/stable/api.html
 
 ## Model Training Setting
 ---
 For this project, day-forward cross validation is used for identifying the best model class to use for model deployment. Different training sets and validation sets are used with Optuna (TPE Multivariate Sampler with 20 trials) for hyperparameter tuning, while different test sets are used for model evaluation.
 
 The diagram below shows how day-forward cross validation works:
-<img src="https://mlr.mlr-org.com/articles/pdf/img/nested_resampling.png" width="600" height="350">
+<img src="https://user-images.githubusercontent.com/34255556/198823897-4effd7ba-f74a-4091-b988-3fcc363b2aec.png" width="800" height="350">
 
-Given the dataset for this project is moderately large (less than 2500 samples), day-forward cross validation is the most suitable cross validation method to use for model algorithm selection to provide a more realistic generalization error of time series models.
+Given the dataset for this project is moderately large (less than 3000 samples), day-forward cross validation is the most suitable cross validation method to use for model algorithm selection to provide a more realistic generalization error of time series models.
 
 The following list of time series models are tested in this project:
 - SARIMAX (no seasonal component)
@@ -101,91 +100,66 @@ The following information below summarizes the configuration of the best model i
 
   - <b>Best model hyperparameters</b>: {'seasonal': 'additive}
   
-Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of inputs within day-forward cross validation.
+Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of inputs/number of jumps within day-forward cross validation.
 
 For every type of time series model tested in this project, a folder is created for every model class within Intermediate_Train_Results folder with the following artifacts:
 
-- Confusion Matrix from 5 fold cross validation (.png format)
-- Classification Report from 5 fold cross validation (.png format)
-- HP_Importances for every fold (.png format - 5 in total)
-- Hyperparameter tuning results for every fold (.csv format - 5 in total)
-- Optimization history plot for every fold (.png format - 5 in total)
-- Optuna study object for every fold (.pkl format - 5 in total)
-- Precision-Recall curve (.png format)
+- HP_Importances for every fold (.png format)
+- Hyperparameter tuning results for every fold (.csv format)
+- Optimization history plot for every fold (.png format)
+- Optuna study object for every fold (.pkl format)
+- ACF Plot (.png format)
+- PACF Plot (.png format)
+- Residual Plot (.png format)
 
 In addition, the following artifacts are also created for the best model class identified after final hyperparameter tuning on the entire dataset:
 
-- Confusion matrix (.png format)
-- Classification report (.png format)
 - HP_Importances (.png format)
 - Hyperparameter tuning results (.csv format)
 - Optimization history plot (.png format)
 - Optuna study object (.pkl format)
 - Learning curve plot (.png format)
-- Shap plots for feature importance from every class (.png format - 2 in total)
-- Precision recall curve (.png format)
+- ACF Plot (.png format)
+- PACF Plot (.png format)
+- Residual Plot (.png format)
+- Time Series Plot (Actual vs Predicted - .png format)
 
 ---
-#### 3. Summary of model evaluation metrics from best classification model
+#### 3. Summary of model evaluation metrics from best time series model
 
-The following information below summarizes the evaluation metrics *(average (standard deviation)) from the best model identified in this project along with the confusion matrix from nested cross validation (5 outer fold with 3 inner fold): 
+The following information below summarizes the evaluation metric *(average (standard deviation)) from the best model identified in this project using day-forward cross validation: 
+
+  - <b>MAPE score (Validation set)</b>: 0.11034% (1.29E-05)
+  - <b>MAPE score (Test set)</b>: 0.1065588% (2.31E-05)
+
+Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of inputs/number of jumps within day-forward cross validation
+
+---
+#### 4. Residual diagnostics from final model trained
 
 <p float="left">
-<img src="https://user-images.githubusercontent.com/34255556/196926115-2c43b974-4a55-4624-9e17-8db399b9510c.png" width="400">
-<img src="https://user-images.githubusercontent.com/34255556/196926153-0b2b1d2e-7e09-40f0-9db6-360c87085d1a.png" width="400">
+<img src="https://user-images.githubusercontent.com/34255556/198824370-d2caef08-2912-4eea-a0b9-dc9e0f84d8f0.png" width="400">
+<img src="https://user-images.githubusercontent.com/34255556/198824376-1bb0317d-7241-47a1-bbb4-5fef8d981d93.png" width="400">
+<img src="https://user-images.githubusercontent.com/34255556/198824390-8e87f3ca-7d26-4231-843e-9d0618401c09.png" width="400">
 </p>
 
-  - <b>Balanced accuracy (Training set - 3 fold)</b>: 0.4975 (0.0381)
-  - <b>Balanced accuracy (Validation set - 3 fold)</b>: 0.3367 (0.0267)
-  - <b>Balanced accuracy (Test set - 5 fold)</b>: 0.3484 (0.0284)
-
-  - <b>Precision (Training set - 3 fold)</b>: 0.5574 (0.1139)
-  - <b>Precision (Validation set - 3 fold)</b>: 0.3854 (0.0504)
-  - <b>Precision (Test set - 5 fold)</b>: 0.3346 (0.0384)
-
-Note that the results above may differ by changing search space of hyperparameter tuning or increasing number of trials used in hyperparameter tuning or changing number of folds within nested cross validation
+From the images above, both ACF and PACF plot shows there is no autocorrelation between residuals. The residual plot above shows that the mean amongst residuals is close to zero. Therefore, the assumption of no autocorrelation and zero mean amongst residuals remain valid for the best time series model identified.
 
 ---
-#### 4. Hyperparameter importances from Optuna (Final model)
+#### 5. Time series plot (Actual vs Predicted) from best time series model
 
-![HP_Importances_LinearSVC_Fold_overall](https://user-images.githubusercontent.com/34255556/196925529-e25eac89-ea69-4374-9d54-9951e331c90c.png)
+![Actual_vs_Predicted_Plot_ExponentialSmoothing](https://user-images.githubusercontent.com/34255556/198824441-4e0443a0-a64c-4dcf-ae4e-f4e9027fd6c8.png)
 
-From the image above, determining the contrast method for encoding ordinal data and method for handling imbalanced data as part of preprocessing pipeline for Linear SVC model provides the highest influence (0.22), followed by selecting hyperparameter value of "C", "class_weight" and feature selection method. Setting hyperparameter value of penalty and use of clustering as additional feature for Linear SVC model provides little to zero influence on results of hyperparameter tuning. This may suggest that both penalty hyperparameters of Linear SVC model and use of clustering as additional feature can be excluded from hyperparameter tuning in the future during model retraining to reduce complexity of hyperparameter tuning process.
-
----
-#### 5. Hyperparameter tuning optimization history from Optuna
-
-![Optimization_History_LinearSVC_Fold_overall](https://user-images.githubusercontent.com/34255556/196925946-56216317-c37c-4cb5-ad0b-632145be6386.png)
-
-From the image above, the best objective value (average of F1 macro scores from 3 fold cross validation) is identified after 20 trials.
+From the diagram above, exponential smoothing model shows a reasonable good fit on the actual power consumption levels, where the additive seasonality component is well captured.
 
 ---
-#### 6. Overall confusion matrix and classification report from final model trained
+#### 6. Learning Curve Analysis
 
-<p float="left">
-<img src="https://user-images.githubusercontent.com/34255556/196926313-f89b556b-2cd6-4b95-9095-7c3f2733c7e7.png" width="400">
-<img src="https://user-images.githubusercontent.com/34255556/196926276-512f430d-5aaa-4916-96af-c71154cdcc2a.png" width="400">
-</p>
+![LearningCurve_ExponentialSmoothing](https://user-images.githubusercontent.com/34255556/198824593-e5264712-27b0-4115-aaf0-de776e26da1c.png)
 
-From the image above, the classification model performs better for cases where a child's wellbeing is either normal or emotional and behaviour significant with more samples being classified correctly. Given that the model evaluation criteria emphasize the costly impact of having both false positives and false negatives equally for all classes, the current classification model is optimized to improve F1 macro score.
+From the diagram above, the gap between train and test MAPE scores gradually decreases as number of training sample size increases. Given the gap between both scores is considerably small, this indicates that adding more training data may not help to further improve model generalization.
 
 ---
-#### 7. Precision Recall Curve from best classification model
-
-![PrecisionRecall_Curve_LinearSVC_CV](https://user-images.githubusercontent.com/34255556/196927600-68a0119c-c961-4ad1-9cd0-3efa9d7c1258.png)
-
-From the diagram above, precision-recall curve from best model class identified shows that the model performs best on identify wellbeing status of children that are normal (0.89), followed by emotional_significant (0.10), behaviour_significant (0.09) and emotional_and_behaviour_significant (0.06). 
-
----
-#### 8. Learning Curve Analysis
-
-![LearningCurve_LinearSVC](https://user-images.githubusercontent.com/34255556/196927116-575713c0-699f-4f23-bfd8-248341a22c48.png)
-
-From the diagram above, the gap between train and test F1 macro scores (from 5-fold cross validation) gradually decreases as number of training sample size increases.
-However, the gap between both scores remain large, which indicates that adding more training data may help to improve generalization of model.
-
----
-
 ## CRISP-DM Methodology
 ---
 For any given Machine Learning projects, CRISP-DM (Cross Industry Standard Practice for Data Mining) methodology is the most commonly adapted methodology used.
@@ -211,7 +185,7 @@ The following points below summarizes the use of every file/folder available for
 3. Model_Training_Modules: Helper modules for model training
 4. Saved_Models: Stores best models identified from model training process for model prediction
 5. Training_Batch_Files: Stores csv batch files to be used for model training
-6. Training_Data_FromDB: Stores compiled data from SQL database for model training
+6. Training_Data_FromDB: Stores compiled data from MongoDB database for model training
 7. Training_Logs: Stores logging information from model training for future debugging and maintenance
 8. Dockerfile: Additional file for Docker project deployment
 9. README.md: Details summary of project for presentation
@@ -222,10 +196,9 @@ The following points below summarizes the use of every file/folder available for
 
 ## MongoDB Atlas Setup
 ---
-
 ![image](https://user-images.githubusercontent.com/34255556/197315546-b60b36b7-10e2-4b50-9eff-ae62ed44b17d.png)
 
-For this project, data provided by the client in JSON format will be stored in MongoDB Atlas, which is a cloud database platform specially for MongoDB.
+For this project, data provided by the client in CSV format will be stored in MongoDB Atlas, which is a cloud database platform specially for MongoDB.
 
 The following steps below shows the setup of MongoDB Atlas:
 
@@ -282,7 +255,7 @@ Docker Desktop needs to be installed into your local system (https://www.docker.
   
 3. On line 8 inside Dockerfile, set the environment variable MONGO_DB_URL as the connection string defined in the last step of MongoDB Atlas Setup section.
 
-![image](https://user-images.githubusercontent.com/34255556/197315793-d676cd57-b2e3-4702-9c83-1fcd84efe6d8.png)
+![image](https://user-images.githubusercontent.com/34255556/198824819-af31f11a-9985-4e7e-9e7a-6b4ff229cf72.png)
 
 4. Build a new docker image on the project directory with the following command:
 ```
@@ -296,7 +269,7 @@ docker run -e PORT=8501 -p 8501:8501 api-name
 
 6. A new browser will open after successfully running the streamlit app with the following interface:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197315976-fa90cc7a-a0b3-4c82-9c38-62072db71399.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824842-82bad213-a460-43c3-9349-2c0ffca967fa.png" width="600">
 
 Browser for the application can be opened from Docker Desktop by clicking on the specific button shown below:
 
@@ -304,7 +277,7 @@ Browser for the application can be opened from Docker Desktop by clicking on the
 
 7. From the image above, click on Training Data Validation first for initializing data ingestion into MongoDB Atlas, followed by subsequent steps from top to bottom in order to avoid potential errors with the model training/model prediction process. The image below shows an example of notification after the process is completed for Training Data Validation process:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316040-748289f6-f509-4e29-aac0-1765de6d3167.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824850-374aac80-2693-47bc-8243-f73d81eb1f66.png" width="600">
 
 8. After running all steps of the training pipeline, run the following command to extract files from a specific directory within the docker container to host machine for viewing:
 ```
@@ -313,11 +286,12 @@ docker cp <container-id>:<source-dir> <destination-dir>
 
 9. After performing model training, clicking on the Model Prediction section expands the following section that allows user input for model prediction:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316098-ec71b7df-6819-4c46-944b-27596c6b262b.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824862-f24eae53-c445-427f-bbf9-5dbc24a0cbf9.png" width="600">
 
 10. The image below shows an example of output from model prediction after successfully completed all of the above steps:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316193-d1cf6fb7-91be-4283-91d6-cced35c70e41.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824873-3481021d-5a51-4516-9e43-8b71ab39325d.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824878-a41e3275-f186-447f-b178-36b2192115ec.png" width="600">
 
 ## Project Instructions (Heroku with Docker)
 ---
@@ -344,7 +318,7 @@ For replicating the steps required for running this project on your own Heroku a
 
 4. On line 8 inside Dockerfile, set the environment variable MONGO_DB_URL as the connection string defined in the last step of MongoDB Atlas Setup section.
 
-![image](https://user-images.githubusercontent.com/34255556/197315793-d676cd57-b2e3-4702-9c83-1fcd84efe6d8.png)
+![image](https://user-images.githubusercontent.com/34255556/198824819-af31f11a-9985-4e7e-9e7a-6b4ff229cf72.png)
 
 5. From a new command prompt window, login to Heroku account and Container Registry by running the following commands:
 ```
@@ -364,19 +338,21 @@ heroku container:release web -a app-name
 ```
 
 8. After successfully deploying docker image onto Heroku, open the app from the Heroku platform and you will see the following interface designed using Streamlit:
-<img src = "https://user-images.githubusercontent.com/34255556/197315976-fa90cc7a-a0b3-4c82-9c38-62072db71399.png" width="600">
+
+<img src = "https://user-images.githubusercontent.com/34255556/198824842-82bad213-a460-43c3-9349-2c0ffca967fa.png" width="600">
 
 9. From the image above, click on Training Data Validation first for initializing data ingestion into MongoDB Atlas, followed by subsequent steps from top to bottom in order to avoid potential errors with the model training/model prediction process. The image below shows an example of notification after the process is completed for Training Data Validation process:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316040-748289f6-f509-4e29-aac0-1765de6d3167.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824850-374aac80-2693-47bc-8243-f73d81eb1f66.png" width="600">
 
 10. After performing model training, clicking on the Model Prediction section expands the following section that allows user input for model prediction:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316098-ec71b7df-6819-4c46-944b-27596c6b262b.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824862-f24eae53-c445-427f-bbf9-5dbc24a0cbf9.png" width="600">
 
 11. The image below shows an example of output from model prediction after successfully completed all of the above steps:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316193-d1cf6fb7-91be-4283-91d6-cced35c70e41.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824873-3481021d-5a51-4516-9e43-8b71ab39325d.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824878-a41e3275-f186-447f-b178-36b2192115ec.png" width="600">
 
 <b>Important Note</b>: 
 - Using "free" dynos on Heroku app only allows the app to run for a maximum of 30 minutes. Since the model training and prediction process takes a long time, consider changing the dynos type to "hobby" for unlimited time, which cost about $7 per month per dyno. You may also consider changing the dynos type to Standard 1X/2X for enhanced app performance.
@@ -396,7 +372,7 @@ If you prefer to deploy this project on your local machine system, the steps for
 
 4. Open anaconda prompt and create a new environment with the following syntax: 
 ```
-conda create -n myenv python=3.10
+conda create -n myenv python=3.8
 ```
 - Note that you will need to install anaconda if not available in your local system: https://www.anaconda.com/
 
@@ -405,33 +381,34 @@ conda create -n myenv python=3.10
 conda activate myenv
 ```
 
-6. Go to the local directory in Command Prompt where Docker_env folder is located and run the following command to install all the python libraries : 
+6. Go to the local directory in Command Prompt where Docker_env folder is located and run the following commands in sequence to install all the python libraries : 
 ```
+conda install libpython m2w64-toolchain -c msys2
 pip install -r requirements.txt
+pip install fbprophet
 ```
 
-7. Overwrite both BorutaShap.py and _tree.py scripts in relevant directories (<b>env/env-name/lib/site-packages and env/env-name/lib/site-packages/shap/explainers</b>) where the original files are located.
-
-8. After installing all the required Python libraries, run the following command on your project directory: 
+7. After installing all the required Python libraries, run the following command on your project directory: 
 ```
 streamlit run pipeline_api.py
 ```
 
-9. A new browser will open after successfully running the streamlit app with the following interface:
+8. A new browser will open after successfully running the streamlit app with the following interface:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197315976-fa90cc7a-a0b3-4c82-9c38-62072db71399.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824842-82bad213-a460-43c3-9349-2c0ffca967fa.png" width="600">
 
-10. From the image above, click on Training Data Validation first for initializing data ingestion into MongoDB Atlas, followed by subsequent steps from top to bottom in order to avoid potential errors with the model training/model prediction process. The image below shows an example of notification after the process is completed for Training Data Validation process:
+9. From the image above, click on Training Data Validation first for initializing data ingestion into MongoDB Atlas, followed by subsequent steps from top to bottom in order to avoid potential errors with the model training/model prediction process. The image below shows an example of notification after the process is completed for Training Data Validation process:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316040-748289f6-f509-4e29-aac0-1765de6d3167.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824850-374aac80-2693-47bc-8243-f73d81eb1f66.png" width="600">
 
-11. After performing model training, clicking on the Model Prediction section expands the following section that allows user input for model prediction:
+10. After performing model training, clicking on the Model Prediction section expands the following section that allows user input for model prediction:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316098-ec71b7df-6819-4c46-944b-27596c6b262b.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824862-f24eae53-c445-427f-bbf9-5dbc24a0cbf9.png" width="600">
 
-12. The image below shows an example of output from model prediction after successfully completed all of the above steps:
+11. The image below shows an example of output from model prediction after successfully completed all of the above steps:
 
-<img src = "https://user-images.githubusercontent.com/34255556/197316193-d1cf6fb7-91be-4283-91d6-cced35c70e41.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824873-3481021d-5a51-4516-9e43-8b71ab39325d.png" width="600">
+<img src = "https://user-images.githubusercontent.com/34255556/198824878-a41e3275-f186-447f-b178-36b2192115ec.png" width="600">
 
 ## Initial Data Cleaning and Feature Engineering
 ---
@@ -452,11 +429,6 @@ vi) Split dataset into features and target labels.
 vii) Perform missing imputation on categorical variables based on highest frequency for every category.
 
 viii) Save reduced set of features and target values into 2 different CSV files (X.csv and y.csv) for further data preprocessing with pipelines to reduce data leakage.
-
-For more details of which features have been initially removed from the dataset, refer to the following CSV file: <b>Columns_Drop_from_Original.csv</b>
-
-In addition, the following pickle files (with self-explanatory names) have been created inside Intermediate_Train_Results folder during this stage which may be used later on during data preprocessing on test data:
-- <b>CategoryImputer.pkl</b>
 
 ## Legality
 ---
