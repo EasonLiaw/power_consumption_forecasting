@@ -80,19 +80,25 @@ More details about the use of AIC score can be referred here for reference: http
 All plots generated from this section can be found in Intermediate_Train_Results/EDA folder.
 
 ##### i. Basic metadata of dataset
-On initial inspection, the current dataset used in this project has a total of 71 features. Both "_id" and "ID.1 features represent unique identifier of a given record and the remaining features have  mix of "float", "int" and "object" data types. Upon closer inspection on data dictionary, there are several date-time related features where further information can be extracted and remaining features are considered as categorical variables.
+On initial inspection, the current dataset used in this project has a total of 19 features. However, only 2 features are required for time series forecasting in this project, which are "Timestamp" and "allsum" variable. The remaining features represent individual components that contribute towards the total power consumption at different timestamps, represented by "allsum" variable.
 
-##### ii. Target variable distribution
-Given that there is no target variable, this project requires creating target variable manually (Wellbeing_Category_WMS - mainly based on variables related to Me and My Feelings Questionnaire. More details can be found in the coding file labeled "train preprocessing.py")
+##### ii. Time series of target variable
 
-![Target_Class_Distribution](https://user-images.githubusercontent.com/34255556/196934993-fc9bbe23-81c3-459c-8263-2ff26a51b31f.png)
+![allsum_Time_Series](https://user-images.githubusercontent.com/34255556/198826305-3d58be85-6a03-454f-82d9-924f67fe2a90.png)
 
-From the diagram above, there is a very clear indication of target imbalance between all 4 classes for multiclass classification. This indicates that target imbalancing needs to be addressed during model training.
+From the diagram above, there is a very clear indication of seasonality with no trend over time for power consumption levels (15 minute average).
 
-##### iii. Missing values
-![Proportion of null values](https://user-images.githubusercontent.com/34255556/196935092-1ba7c4e8-740f-49e7-bfc3-2247ee977b32.png)
+![allsum_Time_Series_One_Day](https://user-images.githubusercontent.com/34255556/198826379-fd0ac59b-ee8b-43dd-a14e-79a7f5010bf7.png)
 
-From the diagram above, most features with missing values identified have missing proportions approximately less than 1%, except for "Method_of_keepintouch" feature with approximately 3% containing missing values.
+Upon closer inspection on power consumption levels for a given day, power consumption levels peaked at two different time intervals (8am to 12pm and 5pm to 7pm). Between 12am and 5pm, power consumption levels are at its lowest point.
+
+##### iii. Stationarity Test using Dickey-Fuller Test
+
+Null hypothesis: Time series is non-stationary
+
+Alternative hypothesis: Time series is stationary
+
+Based on Dickey-fuller test, since p value is less than 0.05, there is sufficient evidence to conclude that power consumption levels on a 15-minute average is stationary. Thus, the null hypothesis is rejected. Output from Dickey-Fuller test is saved in the following file: EDA/Stationarity_Test.csv
 
 ---
 #### 2. Best time series model
@@ -175,7 +181,7 @@ Note that an alternative version of this methodology, known as CRISP-ML(Q) (Cros
 ---
 The following diagram below summarizes the structure for this project:
 
-![image](https://user-images.githubusercontent.com/34255556/197318105-4d4cd686-f6e5-43ed-8ad4-1cff1bbc2adf.png)
+![image](https://user-images.githubusercontent.com/34255556/198827099-415b8fc7-5206-409e-9cd8-e854c011794f.png)
 
 Note that all steps mentioned above have been logged accordingly for future reference and easy maintenance, which are stored in <b>Training_Logs</b> folder.
 
@@ -415,23 +421,19 @@ streamlit run pipeline_api.py
 
 ## Initial Data Cleaning and Feature Engineering
 ---
-After performing Exploratory Data Analysis, the following steps are performed initially on the entire dataset before performing further data preprocessing and model training:
+After performing Exploratory Data Analysis, the following steps are performed initially on the entire dataset before performing model training:
 
-i) Filter data where respondent provides permission to use questionnaire (Use_questionnaire feature)
+i) Extract subset of important columns that are required (i.e. Timestamp and "allsum" variable). "allsum" variable represents the total power consumption level from individual components, which is the main target variable for time series forecasting.
 
-ii) Derive target variable based on features related to Me and My Feelings questionnaire.
+ii) Convert values in Timestamp variable to datetime format
 
-iii) Reformat time related features (i.e Timestamp, Birthdate, Sleeptime_ytd and Awaketime_today) to appropriate form
+iii) Set Timestamp variable as index of dataframe.
 
-iv) Removing list of irrelevant colummns identified from dataset (i.e. unique identifier features, features related to target variable to prevent target leakage and LSOA related features that have direct one to one relationship with WIMD related features)
+iv) Resample "allsum" variable on a 15-minute interval basis.
 
-v) Checking for duplicated rows and remove if exist
+v) Checking for duplicated rows and remove if exist.
 
-vi) Split dataset into features and target labels.
-
-vii) Perform missing imputation on categorical variables based on highest frequency for every category.
-
-viii) Save reduced set of features and target values into 2 different CSV files (X.csv and y.csv) for further data preprocessing with pipelines to reduce data leakage.
+vi) Save dataset into a single CSV file (data.csv) for model training.
 
 ## Legality
 ---
