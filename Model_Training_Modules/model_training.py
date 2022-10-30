@@ -1,13 +1,13 @@
 '''
 Author: Liaw Yi Xian
-Last Modified: 29th October 2022
+Last Modified: 30th October 2022
 '''
 
 import warnings
 warnings.filterwarnings('ignore')
 import pandas as pd
 import numpy as np
-import os
+import os, sys
 import matplotlib.pyplot as plt
 import optuna
 import joblib
@@ -19,10 +19,9 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from sklearn.metrics import mean_absolute_percentage_error
 from Application_Logger.logger import App_Logger
-
+from Application_Logger.exception import CustomException
 
 random_state=120
-
 
 class model_trainer:
 
@@ -177,10 +176,8 @@ class model_trainer:
                 self.folderpath + obj.__name__ + f"/Hyperparameter_Tuning_Results_{obj.__name__}_Fold_{fold}.csv",index=False)
             del study
         except Exception as e:
-            self.log_writer.log(
-                self.file_object, f'Performing optuna hyperparameter tuning for {obj.__name__} model failed with the following error: {e}')
-            raise Exception(
-                f'Performing optuna hyperparameter tuning for {obj.__name__} model failed with the following error: {e}')
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
         return trial
 
 
@@ -194,6 +191,7 @@ class model_trainer:
             - PACF plot for residuals
 
             Output: None
+            On Failure: Logging error and raise exception
 
             Parameters:
             - modelname: String name of model
@@ -202,24 +200,28 @@ class model_trainer:
             - actual_value: Actual target values from dataset
             - pred_value: Predicted target values
         '''
-        plt.style.use('seaborn-whitegrid')
-        plt.scatter(x = pred_value, y= np.subtract(pred_value,actual_value))
-        plt.axhline(y=0, color='black')
-        plt.title(
-            f'Residual plot for {modelname} {figtitle} (Mean: {np.round(np.subtract(pred_value,actual_value).mean(),6)})')
-        plt.ylabel('Residuals')
-        plt.xlabel('Predicted Value')
-        plt.savefig(
-            self.folderpath+modelname+f'/Residual_Plot_{modelname}_{plotname}.png',bbox_inches='tight')
-        plt.clf()
-        plot_acf(np.subtract(pred_value,actual_value), lags=24)
-        plt.savefig(
-            self.folderpath+modelname+f'/ACF_Plot_{modelname}_{plotname}.png',bbox_inches='tight')
-        plt.clf()
-        plot_pacf(np.subtract(pred_value,actual_value), lags=24)
-        plt.savefig(
-            self.folderpath+modelname+f'/PACF_Plot_{modelname}_{plotname}.png',bbox_inches='tight')
-        plt.clf()
+        try:
+            plt.style.use('seaborn-whitegrid')
+            plt.scatter(x = pred_value, y= np.subtract(pred_value,actual_value))
+            plt.axhline(y=0, color='black')
+            plt.title(
+                f'Residual plot for {modelname} {figtitle} (Mean: {np.round(np.subtract(pred_value,actual_value).mean(),6)})')
+            plt.ylabel('Residuals')
+            plt.xlabel('Predicted Value')
+            plt.savefig(
+                self.folderpath+modelname+f'/Residual_Plot_{modelname}_{plotname}.png',bbox_inches='tight')
+            plt.clf()
+            plot_acf(np.subtract(pred_value,actual_value), lags=24)
+            plt.savefig(
+                self.folderpath+modelname+f'/ACF_Plot_{modelname}_{plotname}.png',bbox_inches='tight')
+            plt.clf()
+            plot_pacf(np.subtract(pred_value,actual_value), lags=24)
+            plt.savefig(
+                self.folderpath+modelname+f'/PACF_Plot_{modelname}_{plotname}.png',bbox_inches='tight')
+            plt.clf()
+        except Exception as e:
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
 
 
     def time_series_plot(self, modelname, data, pred_values):
@@ -227,35 +229,40 @@ class model_trainer:
             Method Name: time_series_plot
             Description: This method plots time series for actual values vs values predicted by given model and saves the following plots within the given model class folder.
             Output: None
+            On Failure: Logging error and raise exception
 
             Parameters:
             - modelname: String name of model
             - data: Dataset in pandas dataframe format
             - pred_values: Predicted target values
         '''
-        plt.style.use('seaborn-whitegrid')
-        plt.figure(figsize=(60,18))
-        plt.rc('font', size=20)      
-        plt.rc('axes', titlesize=24)
-        plt.rc('axes', labelsize=26)
-        plt.rc('xtick', labelsize=24)
-        plt.rc('ytick', labelsize=24)
-        plt.rc('legend', fontsize=24)
-        plt.rc('figure', titlesize=32)
-        plt.plot(data, label='Actual')
-        plt.title(
-            'Actual vs Predicted 15 Minute Average of Power Consumption Levels', fontsize=34)
-        pred_data = pd.DataFrame(
-            {'Timestamp':data.reset_index()['Timestamp'],'allsum': pd.Series(pred_values)})
-        pred_data['Timestamp'] = pd.to_datetime(pred_data['Timestamp'])
-        pred_data = pred_data.set_index('Timestamp')
-        plt.plot(pred_data, label='Predicted')
-        plt.legend(loc='best')
-        plt.ylabel("Power consumption level")
-        plt.tight_layout()
-        plt.savefig(
-            self.folderpath+modelname+f'/Actual_vs_Predicted_Plot_{modelname}.png',bbox_inches='tight')
-        plt.clf()
+        try:
+            plt.style.use('seaborn-whitegrid')
+            plt.figure(figsize=(60,18))
+            plt.rc('font', size=20)      
+            plt.rc('axes', titlesize=24)
+            plt.rc('axes', labelsize=26)
+            plt.rc('xtick', labelsize=24)
+            plt.rc('ytick', labelsize=24)
+            plt.rc('legend', fontsize=24)
+            plt.rc('figure', titlesize=32)
+            plt.plot(data, label='Actual')
+            plt.title(
+                'Actual vs Predicted 15 Minute Average of Power Consumption Levels', fontsize=34)
+            pred_data = pd.DataFrame(
+                {'Timestamp':data.reset_index()['Timestamp'],'allsum': pd.Series(pred_values)})
+            pred_data['Timestamp'] = pd.to_datetime(pred_data['Timestamp'])
+            pred_data = pred_data.set_index('Timestamp')
+            plt.plot(pred_data, label='Predicted')
+            plt.legend(loc='best')
+            plt.ylabel("Power consumption level")
+            plt.tight_layout()
+            plt.savefig(
+                self.folderpath+modelname+f'/Actual_vs_Predicted_Plot_{modelname}.png',bbox_inches='tight')
+            plt.clf()
+        except Exception as e:
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
 
 
     def learning_curve_plot(self, modelname, data, best_trial):
@@ -263,55 +270,60 @@ class model_trainer:
             Method Name: learning_curve_plot
             Description: This method plots learning curve and saves plot within the given model class folder.
             Output: None
+            On Failure: Logging error and raise exception
 
             Parameters:
             - modelname: String name of model
             - data: Dataset in pandas dataframe format
             - best_trial: Optuna's best trial object from hyperparameter tuning
         '''
-        train_size, train_mape_list, test_mape_list = [], [], []
-        for i in range(200,int(len(data) * 0.7)+1,200):
-            train, test = data[0:i], data[i:]
-            if modelname == 'SARIMAX':
-                model = SARIMAX(
-                    endog = train, order = (best_trial.params['p'], 0, best_trial.params['q']),initialization='approximate_diffuse').fit(disp=0)
-                train_pred =  model.predict(start=0, end=len(train)-1)
-                test_pred =  model.forecast(len(test))
-            elif modelname == 'Prophet':
-                train_copy = train.reset_index().copy()
-                train_copy.columns = ['ds', 'y']
-                model = Prophet(
-                    changepoint_prior_scale = best_trial.params['changepoint_prior_scale'], seasonality_prior_scale = best_trial.params['seasonality_prior_scale'], holidays_prior_scale = best_trial.params['holidays_prior_scale']).fit(train_copy)
-                train_future = pd.DataFrame(train_copy['ds'])
-                train_pred =  model.predict(train_future)['yhat'].values
-                test_future = pd.DataFrame(test.reset_index()['Timestamp'])
-                test_future.columns = ['ds']
-                test_pred =  model.predict(test_future)['yhat'].values
-            else:
-                seasonal = None if best_trial.params['seasonal'] == 'None' else best_trial.params['seasonal']
-                seasonal_periods = 0 if best_trial.params['seasonal']== 'None' else 96
-                model = ExponentialSmoothing(
-                    endog=train, seasonal = seasonal, seasonal_periods = seasonal_periods).fit()
-                train_pred =  model.predict(start=0, end=len(train)-1)
-                test_pred =  model.forecast(len(test))
-            train_mape = mean_absolute_percentage_error(train_pred,train)
-            test_mape = mean_absolute_percentage_error(test_pred,test)
-            train_mape_list.append(train_mape)
-            test_mape_list.append(test_mape)
-            train_size.append(i)
-        plt.style.use('seaborn-whitegrid')
-        plt.grid(True)
-        plt.plot(
-            train_size, train_mape_list, label = 'Training Score', marker='.',markersize=14)
-        plt.plot(
-            train_size, test_mape_list, label = 'Validation Score', marker='.',markersize=14)
-        plt.ylabel('Score')
-        plt.xlabel('Training instances')
-        plt.title(f'Learning Curve for {modelname}')
-        plt.legend(frameon=True, loc='best')
-        plt.savefig(
-            self.folderpath+modelname+f'/LearningCurve_{modelname}.png',bbox_inches='tight')
-        plt.clf()
+        try:
+            train_size, train_mape_list, test_mape_list = [], [], []
+            for i in range(200,int(len(data) * 0.7)+1,200):
+                train, test = data[0:i], data[i:]
+                if modelname == 'SARIMAX':
+                    model = SARIMAX(
+                        endog = train, order = (best_trial.params['p'], 0, best_trial.params['q']),initialization='approximate_diffuse').fit(disp=0)
+                    train_pred =  model.predict(start=0, end=len(train)-1)
+                    test_pred =  model.forecast(len(test))
+                elif modelname == 'Prophet':
+                    train_copy = train.reset_index().copy()
+                    train_copy.columns = ['ds', 'y']
+                    model = Prophet(
+                        changepoint_prior_scale = best_trial.params['changepoint_prior_scale'], seasonality_prior_scale = best_trial.params['seasonality_prior_scale'], holidays_prior_scale = best_trial.params['holidays_prior_scale']).fit(train_copy)
+                    train_future = pd.DataFrame(train_copy['ds'])
+                    train_pred =  model.predict(train_future)['yhat'].values
+                    test_future = pd.DataFrame(test.reset_index()['Timestamp'])
+                    test_future.columns = ['ds']
+                    test_pred =  model.predict(test_future)['yhat'].values
+                else:
+                    seasonal = None if best_trial.params['seasonal'] == 'None' else best_trial.params['seasonal']
+                    seasonal_periods = 0 if best_trial.params['seasonal']== 'None' else 96
+                    model = ExponentialSmoothing(
+                        endog=train, seasonal = seasonal, seasonal_periods = seasonal_periods).fit()
+                    train_pred =  model.predict(start=0, end=len(train)-1)
+                    test_pred =  model.forecast(len(test))
+                train_mape = mean_absolute_percentage_error(train_pred,train)
+                test_mape = mean_absolute_percentage_error(test_pred,test)
+                train_mape_list.append(train_mape)
+                test_mape_list.append(test_mape)
+                train_size.append(i)
+            plt.style.use('seaborn-whitegrid')
+            plt.grid(True)
+            plt.plot(
+                train_size, train_mape_list, label = 'Training Score', marker='.',markersize=14)
+            plt.plot(
+                train_size, test_mape_list, label = 'Validation Score', marker='.',markersize=14)
+            plt.ylabel('Score')
+            plt.xlabel('Training instances')
+            plt.title(f'Learning Curve for {modelname}')
+            plt.legend(frameon=True, loc='best')
+            plt.savefig(
+                self.folderpath+modelname+f'/LearningCurve_{modelname}.png',bbox_inches='tight')
+            plt.clf()
+        except Exception as e:
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
 
 
     def model_training(
@@ -335,32 +347,36 @@ class model_trainer:
             - val_data: Data from validation set
             - final_model: Indicator of whether hyperparameter tuning is done for final model deployment (True or False)
         '''
-        func = lambda trial: obj(trial, train_data, val_data, final_model)
-        func.__name__ = modelname
-        self.log_writer.log(
-            self.file_object, f"Start hyperparameter tuning for {modelname} for fold {fold_num}")
-        best_trial = self.optuna_optimizer(func, n_trials, fold_num)
-        self.log_writer.log(
-            self.file_object, f"Hyperparameter tuning for {modelname} completed for fold {fold_num}")
-        self.log_writer.log(
-            self.file_object, f"Finish hyperparameter tuning for {modelname} for fold {fold_num}")
-        if modelname == 'SARIMAX':
-            model_copy = SARIMAX(
-                endog = pd.concat([train_data, val_data]), order = (best_trial.params['p'], 0, best_trial.params['q']),initialization='approximate_diffuse')
-            model_copy = model_copy.fit(disp=0)
-        elif modelname == 'Prophet':
-            train_val_data = pd.concat([train_data, val_data])
-            train_val_data_copy = train_val_data.reset_index().copy()
-            train_val_data_copy.columns = ['ds', 'y']
-            model_copy = Prophet(
-                changepoint_prior_scale = best_trial.params['changepoint_prior_scale'], seasonality_prior_scale = best_trial.params['seasonality_prior_scale'], holidays_prior_scale = best_trial.params['holidays_prior_scale'])
-            model_copy.fit(train_val_data_copy)
-        else:
-            seasonal = None if best_trial.params['seasonal'] == 'None' else best_trial.params['seasonal']
-            seasonal_periods = 0 if best_trial.params['seasonal']== 'None' else 96
-            model_copy = ExponentialSmoothing(
-                endog = pd.concat([train_data, val_data]), seasonal = seasonal, seasonal_periods = seasonal_periods)
-            model_copy = model_copy.fit()
+        try:
+            func = lambda trial: obj(trial, train_data, val_data, final_model)
+            func.__name__ = modelname
+            self.log_writer.log(
+                self.file_object, f"Start hyperparameter tuning for {modelname} for fold {fold_num}")
+            best_trial = self.optuna_optimizer(func, n_trials, fold_num)
+            self.log_writer.log(
+                self.file_object, f"Hyperparameter tuning for {modelname} completed for fold {fold_num}")
+            self.log_writer.log(
+                self.file_object, f"Finish hyperparameter tuning for {modelname} for fold {fold_num}")
+            if modelname == 'SARIMAX':
+                model_copy = SARIMAX(
+                    endog = pd.concat([train_data, val_data]), order = (best_trial.params['p'], 0, best_trial.params['q']),initialization='approximate_diffuse')
+                model_copy = model_copy.fit(disp=0)
+            elif modelname == 'Prophet':
+                train_val_data = pd.concat([train_data, val_data])
+                train_val_data_copy = train_val_data.reset_index().copy()
+                train_val_data_copy.columns = ['ds', 'y']
+                model_copy = Prophet(
+                    changepoint_prior_scale = best_trial.params['changepoint_prior_scale'], seasonality_prior_scale = best_trial.params['seasonality_prior_scale'], holidays_prior_scale = best_trial.params['holidays_prior_scale'])
+                model_copy.fit(train_val_data_copy)
+            else:
+                seasonal = None if best_trial.params['seasonal'] == 'None' else best_trial.params['seasonal']
+                seasonal_periods = 0 if best_trial.params['seasonal']== 'None' else 96
+                model_copy = ExponentialSmoothing(
+                    endog = pd.concat([train_data, val_data]), seasonal = seasonal, seasonal_periods = seasonal_periods)
+                model_copy = model_copy.fit()
+        except Exception as e:
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
         return model_copy, best_trial
 
 
@@ -431,10 +447,8 @@ class model_trainer:
             self.log_writer.log(
                 self.file_object, f"Average optimized results for {modelname} model saved")                
         except Exception as e:
-            self.log_writer.log(
-                self.file_object, f'Hyperparameter tuning on {modelname} model failed with the following error: {e}')
-            raise Exception(
-                f'Hyperparameter tuning on {modelname} model failed with the following error: {e}')
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
 
 
     def final_overall_model(self, obj, modelname, data, n_trials):
@@ -447,6 +461,7 @@ class model_trainer:
             3. Line curve that represents actual vs predicted values
             
             Output: None
+            On Failure: Logging error and raise exception
 
             Parameters:
             - obj: Optuna objective function
@@ -456,25 +471,29 @@ class model_trainer:
         '''
         self.log_writer.log(
             self.file_object, f"Start final model training on all data for {modelname}")
-        data['Timestamp'] = pd.to_datetime(data['Timestamp'])
-        data = data.set_index('Timestamp')
-        overall_model, best_trial = self.model_training(
-            modelname, obj, data, n_trials, 'overall', final_model=True)
-        if modelname == 'SARIMAX':
-            pred_values = overall_model.predict(start=0,end=len(data)-1).values
-        elif modelname == 'Prophet':
-            future = pd.DataFrame(data.reset_index()['Timestamp'])
-            future.columns = ['ds']
-            forecast = overall_model.predict(future)
-            pred_values = forecast['yhat'].values
-        else:
-            pred_values = overall_model.predict(start=0,end=len(data)-1).values
-        plt.rcdefaults()
-        self.residual_diagnostics(
-            modelname, '- final model', 'final_model', data['allsum'].values, pred_values)
-        self.learning_curve_plot(modelname, data, best_trial)
-        self.time_series_plot(modelname, data, pred_values)
-        joblib.dump(overall_model,'Saved_Models/FinalModel.pkl')
+        try:
+            data['Timestamp'] = pd.to_datetime(data['Timestamp'])
+            data = data.set_index('Timestamp')
+            overall_model, best_trial = self.model_training(
+                modelname, obj, data, n_trials, 'overall', final_model=True)
+            if modelname == 'SARIMAX':
+                pred_values = overall_model.predict(start=0,end=len(data)-1).values
+            elif modelname == 'Prophet':
+                future = pd.DataFrame(data.reset_index()['Timestamp'])
+                future.columns = ['ds']
+                forecast = overall_model.predict(future)
+                pred_values = forecast['yhat'].values
+            else:
+                pred_values = overall_model.predict(start=0,end=len(data)-1).values
+            plt.rcdefaults()
+            self.residual_diagnostics(
+                modelname, '- final model', 'final_model', data['allsum'].values, pred_values)
+            self.learning_curve_plot(modelname, data, best_trial)
+            self.time_series_plot(modelname, data, pred_values)
+            joblib.dump(overall_model,'Saved_Models/FinalModel.pkl')
+        except Exception as e:
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
         self.log_writer.log(
             self.file_object, f"Finish final model training on all data for {modelname}")
         

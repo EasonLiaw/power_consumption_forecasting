@@ -1,15 +1,16 @@
 '''
 Author: Liaw Yi Xian
-Last Modified: 29th October 2022
+Last Modified: 30th October 2022
 '''
 
 import warnings
 warnings.filterwarnings('ignore')
 import pandas as pd
 from Application_Logger.logger import App_Logger
+from Application_Logger.exception import CustomException
 import numpy as np
 import matplotlib.pyplot as plt
-import os
+import os, sys
 import plotly.express as px
 import plotly.figure_factory as ff
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
@@ -47,10 +48,8 @@ class train_Preprocessor:
         try:
             data = pd.read_csv(self.datapath)
         except Exception as e:
-            self.log_writer.log(
-                self.file_object, f"Fail to read compiled data from database with the following error: {e}")
-            raise Exception(
-                f"Fail to read compiled data from database with the following error: {e}")
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
         self.log_writer.log(
             self.file_object, "Finish reading compiled data from database")
         return data
@@ -63,9 +62,13 @@ class train_Preprocessor:
             Output: A pandas dataframe
             On Failure: Logging error and raise exception
         '''
-        data['Timestamp'] = pd.to_datetime(data['Timestamp'])
-        data = data.set_index('Timestamp')
-        data = data.resample('15min')['allsum'].mean()
+        try:
+            data['Timestamp'] = pd.to_datetime(data['Timestamp'])
+            data = data.set_index('Timestamp')
+            data = data.resample('15min')['allsum'].mean()
+        except Exception as e:
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
         return data
 
 
@@ -91,9 +94,8 @@ class train_Preprocessor:
                 data = data.drop_duplicates(ignore_index=True)
             except Exception as e:
                 self.log_writer.log(
-                    self.file_object, f"Fail to remove duplicated rows with the following error: {e}")
-                raise Exception(
-                    f"Fail to remove duplicated rows with the following error: {e}")
+                    self.file_object, str(CustomException(e,sys)))
+                raise CustomException(e,sys)
         self.log_writer.log(
             self.file_object, "Finish handling duplicated rows in the dataset")
         return data
@@ -104,67 +106,74 @@ class train_Preprocessor:
             Method Name: eda
             Description: This method performs exploratory data analysis on the entire dataset, while generating various plots/csv files for reference.
             Output: None
+            On Failure: Logging error and raise exception
         '''
         self.log_writer.log(
             self.file_object, 'Start performing exploratory data analysis')
-        path = os.path.join(self.result_dir, 'EDA')
-        if not os.path.exists(path):
-            os.mkdir(path)
-        data = self.extract_compiled_data()
-        data = self.data_cleaning(data)
-        # Extract basic information about dataset
-        pd.DataFrame({"name": data.name, "non-nulls": len(data)-data.isnull().sum(), "type": data.dtype},index=[0]).to_csv(self.result_dir + "EDA/Data_Info.csv",index=False)
-        # Extract summary statistics about dataset
-        data.describe().T.to_csv(
-            self.result_dir + "EDA/Data_Summary_Statistics.csv")
-        col_path = os.path.join(path, data.name)
-        if not os.path.exists(col_path):
-            os.mkdir(col_path)
-        # Plotting boxplot of features
-        fig2 = px.box(data,x=data.name,title=f"{data.name} Boxplot")
-        fig2.write_image(
-            self.result_dir + f"EDA/{data.name}/{data.name}_Boxplot.png")
-        # Plotting kdeplot of features
-        fig3 = ff.create_distplot(
-            [data], [data.name], show_hist=False,show_rug=False)
-        fig3.layout.update(
-            title=f'{data.name} Density curve (Skewness: {np.round(data.skew(),4)})')
-        fig3.write_image(
-            self.result_dir + f"EDA/{data.name}/{data.name}_Distribution.png")
-        # ACF and PACF plot
-        plt.style.use('seaborn-whitegrid')
-        plot_acf(data, lags=24)
-        plt.savefig(self.result_dir + f"EDA/{data.name}/{data.name}_ACF.png")
-        plt.clf()
-        plot_pacf(data, lags=24)
-        plt.savefig(self.result_dir + f"EDA/{data.name}/{data.name}_PACF.png")
-        plt.clf()
-        # Time series plot for one month
-        plt.figure(figsize=(72,18))
-        plt.plot(data, label='Original')
-        plt.title(
-            '15 Minute Average of Power Consumption Levels for September', fontsize=34)
-        plt.legend(loc='best', fontsize=28)
-        plt.xticks(fontsize=24)
-        plt.yticks(fontsize=24)
-        plt.tight_layout()
-        plt.savefig(
-            self.result_dir + f"EDA/{data.name}/{data.name}_Time_Series.png")
-        plt.clf()
-        # Time series plot for one day
-        plt.figure(figsize=(30,18))
-        plt.plot(data.iloc[:96], label='Original')
-        plt.title(
-            '15 Minute Average of Power Consumption Levels for One Day', fontsize=34)
-        plt.legend(loc='best', fontsize=28)
-        plt.xticks(fontsize=24)
-        plt.yticks(fontsize=24)
-        plt.tight_layout()
-        plt.savefig(
-            self.result_dir + f"EDA/{data.name}/{data.name}_Time_Series_One_Day.png")
-        plt.clf()
-        # Stationarity test
-        pd.Series(adfuller(data)[0:4], index=['Test Statistic','p-value','#Lags Used','Number of Observations Used']).to_csv(self.result_dir + "EDA/Stationarity_Test.csv")
+        try:
+            path = os.path.join(self.result_dir, 'EDA')
+            if not os.path.exists(path):
+                os.mkdir(path)
+            data = self.extract_compiled_data()
+            data = self.data_cleaning(data)
+            # Extract basic information about dataset
+            pd.DataFrame({"name": data.name, "non-nulls": len(data)-data.isnull().sum(), "type": data.dtype},index=[0]).to_csv(self.result_dir + "EDA/Data_Info.csv",index=False)
+            # Extract summary statistics about dataset
+            data.describe().T.to_csv(
+                self.result_dir + "EDA/Data_Summary_Statistics.csv")
+            col_path = os.path.join(path, data.name)
+            if not os.path.exists(col_path):
+                os.mkdir(col_path)
+            # Plotting boxplot of features
+            fig2 = px.box(data,x=data.name,title=f"{data.name} Boxplot")
+            fig2.write_image(
+                self.result_dir + f"EDA/{data.name}/{data.name}_Boxplot.png")
+            # Plotting kdeplot of features
+            fig3 = ff.create_distplot(
+                [data], [data.name], show_hist=False,show_rug=False)
+            fig3.layout.update(
+                title=f'{data.name} Density curve (Skewness: {np.round(data.skew(),4)})')
+            fig3.write_image(
+                self.result_dir + f"EDA/{data.name}/{data.name}_Distribution.png")
+            # ACF and PACF plot
+            plt.style.use('seaborn-whitegrid')
+            plot_acf(data, lags=24)
+            plt.savefig(
+                self.result_dir + f"EDA/{data.name}/{data.name}_ACF.png")
+            plt.clf()
+            plot_pacf(data, lags=24)
+            plt.savefig(
+                self.result_dir + f"EDA/{data.name}/{data.name}_PACF.png")
+            plt.clf()
+            # Time series plot for one month
+            plt.figure(figsize=(72,18))
+            plt.plot(data, label='Original')
+            plt.title(
+                '15 Minute Average of Power Consumption Levels for September', fontsize=34)
+            plt.legend(loc='best', fontsize=28)
+            plt.xticks(fontsize=24)
+            plt.yticks(fontsize=24)
+            plt.tight_layout()
+            plt.savefig(
+                self.result_dir + f"EDA/{data.name}/{data.name}_Time_Series.png")
+            plt.clf()
+            # Time series plot for one day
+            plt.figure(figsize=(30,18))
+            plt.plot(data.iloc[:96], label='Original')
+            plt.title(
+                '15 Minute Average of Power Consumption Levels for One Day', fontsize=34)
+            plt.legend(loc='best', fontsize=28)
+            plt.xticks(fontsize=24)
+            plt.yticks(fontsize=24)
+            plt.tight_layout()
+            plt.savefig(
+                self.result_dir + f"EDA/{data.name}/{data.name}_Time_Series_One_Day.png")
+            plt.clf()
+            # Stationarity test
+            pd.Series(adfuller(data)[0:4], index=['Test Statistic','p-value','#Lags Used','Number of Observations Used']).to_csv(self.result_dir + "EDA/Stationarity_Test.csv")
+        except Exception as e:
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
         self.log_writer.log(
             self.file_object, 'Finish performing exploratory data analysis')
 

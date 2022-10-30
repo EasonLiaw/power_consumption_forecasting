@@ -1,13 +1,14 @@
 '''
 Author: Liaw Yi Xian
-Last Modified: 29th October 2022
+Last Modified: 30th October 2022
 '''
 
 import json
 import pandas as pd
 from pymongo import MongoClient
 from Application_Logger.logger import App_Logger
-import os, shutil
+from Application_Logger.exception import CustomException
+import os, shutil, sys
 import datetime
 
 MONGO_DB_URL = os.getenv('MONGO_DB_URL')
@@ -57,10 +58,8 @@ class rawtraindatavalidation:
                 self.file_object, "Error connecting to MongoDB database")
             raise Exception("Error connecting to MongoDB database")
         except Exception as e:
-            self.log_writer.log(
-                self.file_object, f"The following error occured when connecting to MongoDB database: {e}")
-            raise Exception(
-                f"The following error occured when connecting to MongoDB database: {e}")
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
         self.log_writer.log(
             self.file_object, f"Finish creating new collection ({self.collection_name}) in MongoDB database ({self.db_name})")
     
@@ -84,10 +83,8 @@ class rawtraindatavalidation:
                 self.file_object, "Error connecting to MongoDB database")
             raise Exception("Error connecting to MongoDB database")
         except Exception as e:
-            self.log_writer.log(
-                self.file_object, f"The following error occured when connecting to MongoDB database: {e}")
-            raise Exception(
-                f"The following error occured when connecting to MongoDB database: {e}")
+            self.log_writer.log(self.file_object, str(CustomException(e,sys)))
+            raise CustomException(e,sys)
         self.log_writer.log(
             self.file_object, "Finish writing compiled good training data into a new CSV file")
 
@@ -110,9 +107,8 @@ class rawtraindatavalidation:
                     self.file_object, f"Folder {folder} has been initialized")
             except Exception as e:
                 self.log_writer.log(
-                    self.file_object, f"Folder {folder} could not be initialized with the following error: {e}")
-                raise Exception(
-                    f"Folder {folder} could not be initialized with the following error: {e}")
+                    self.file_object, str(CustomException(e,sys)))
+                raise CustomException(e,sys)
         self.log_writer.log(
             self.file_object, "Finish initializing folder structure")
 
